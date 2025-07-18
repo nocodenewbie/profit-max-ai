@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +10,9 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Conversations from "./pages/Conversations";
 import NotFound from "./pages/NotFound";
+import { WidgetAPI } from "./pages/api/WidgetAPI";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/conversations" 
+              element={
+                <ProtectedRoute>
+                  <Conversations />
                 </ProtectedRoute>
               } 
             />

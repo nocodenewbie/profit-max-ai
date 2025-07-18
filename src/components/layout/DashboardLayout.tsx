@@ -4,7 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Bell, Search, User, LogOut, Bot, Settings, BarChart3, MessageSquare, Code } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/AuthContext"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 
 interface DashboardLayoutProps {
@@ -16,6 +16,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const { distributorProfile, logout } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const location = useLocation()
 
   const handleLogout = async () => {
     try {
@@ -49,15 +50,25 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         
         <div className="p-4">
           <nav className="space-y-2">
-            <Button variant="ghost" className="w-full justify-start" asChild>
+            <Button 
+              variant={location.pathname === "/dashboard" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              asChild
+            >
               <a href="/dashboard">
                 <BarChart3 className="h-4 w-4 mr-3" />
                 Dashboard
               </a>
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
-              <MessageSquare className="h-4 w-4 mr-3" />
-              Conversas
+            <Button 
+              variant={location.pathname === "/conversations" ? "default" : "ghost"} 
+              className="w-full justify-start"
+              asChild
+            >
+              <a href="/conversations">
+                <MessageSquare className="h-4 w-4 mr-3" />
+                Conversas
+              </a>
             </Button>
             <Button variant="ghost" className="w-full justify-start">
               <Code className="h-4 w-4 mr-3" />
