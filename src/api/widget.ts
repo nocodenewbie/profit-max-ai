@@ -102,7 +102,8 @@ export async function handleWidgetChat(request: WidgetChatRequest) {
       const conversationSnap = await getDoc(conversationRef);
       
       if (conversationSnap.exists()) {
-        conversation = { id: conversationSnap.id, ...conversationSnap.data() } as Conversation;
+        const conversationData = conversationSnap.data() as Omit<Conversation, 'id'>;
+        conversation = { id: conversationSnap.id, ...conversationData };
       } else {
         throw new Error('Conversa não encontrada');
       }
