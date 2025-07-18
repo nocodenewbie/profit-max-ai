@@ -1,8 +1,11 @@
 import { ReactNode } from "react"
-import { Navigation } from "@/components/ui/navigation"
 import { Button } from "@/components/ui/button"
-import { Bell, Search, User } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Bell, Search, User, LogOut, Bot, Settings, BarChart3, MessageSquare, Code } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { useAuth } from "@/contexts/AuthContext"
+import { useNavigate } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -10,6 +13,27 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, title }: DashboardLayoutProps) {
+  const { distributorProfile, logout } = useAuth()
+  const navigate = useNavigate()
+  const { toast } = useToast()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate('/login')
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso",
+      })
+    } catch (error) {
+      toast({
+        title: "Erro no logout",
+        description: "Não foi possível fazer logout",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-background">
       {/* Sidebar */}
@@ -17,14 +41,33 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         <div className="flex h-16 items-center px-6 border-b border-border">
           <div className="flex items-center space-x-2">
             <div className="h-8 w-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">PM</span>
+              <Bot className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">ProfitMax</span>
+            <span className="text-lg font-bold text-foreground">VVI</span>
           </div>
         </div>
         
         <div className="p-4">
-          <Navigation />
+          <nav className="space-y-2">
+            <Button variant="ghost" className="w-full justify-start" asChild>
+              <a href="/dashboard">
+                <BarChart3 className="h-4 w-4 mr-3" />
+                Dashboard
+              </a>
+            </Button>
+            <Button variant="ghost" className="w-full justify-start">
+              <MessageSquare className="h-4 w-4 mr-3" />
+              Conversas
+            </Button>
+            <Button variant="ghost" className="w-full justify-start">
+              <Code className="h-4 w-4 mr-3" />
+              Widget
+            </Button>
+            <Button variant="ghost" className="w-full justify-start">
+              <Settings className="h-4 w-4 mr-3" />
+              Configurações
+            </Button>
+          </nav>
         </div>
       </div>
 
@@ -52,9 +95,25 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
                 <Bell className="h-5 w-5" />
               </Button>
               
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5 text-sm font-medium">
+                    {distributorProfile?.companyName}
+                  </div>
+                  <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                    {distributorProfile?.email}
+                  </div>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>

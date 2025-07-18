@@ -1,40 +1,59 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { StatsCard } from "@/components/dashboard/StatsCard"
-import { RecentOrders } from "@/components/dashboard/RecentOrders"
+import { WidgetSnippet } from "@/components/distributor/WidgetSnippet"
+import { OrdersList } from "@/components/distributor/OrdersList"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAuth } from "@/contexts/AuthContext"
 import { 
   DollarSign, 
   TrendingUp, 
   ShoppingCart, 
   Users,
   MessageSquare,
-  Target
+  Bot,
+  Activity,
+  Clock
 } from "lucide-react"
 
 export default function Dashboard() {
+  const { distributorProfile } = useAuth()
+
   return (
     <DashboardLayout title="Dashboard">
       <div className="space-y-6 animate-fade-in">
+        {/* Welcome Section */}
+        <div className="bg-gradient-primary p-6 rounded-lg text-primary-foreground">
+          <div className="flex items-center space-x-4">
+            <Bot className="h-12 w-12" />
+            <div>
+              <h2 className="text-2xl font-bold">Bem-vindo, {distributorProfile?.companyName}!</h2>
+              <p className="text-primary-foreground/80">
+                Seu vendedor virtual está funcionando 24/7 para converter visitantes em pedidos.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
-            title="Receita Total"
-            value="R$ 24.580"
-            description="Este mês"
-            icon={<DollarSign className="h-6 w-6 text-success" />}
-            trend={{ value: 12.5, isPositive: true }}
+            title="Conversas do Mês"
+            value="342"
+            description="Interações do widget"
+            icon={<MessageSquare className="h-6 w-6 text-primary" />}
+            trend={{ value: 28.5, isPositive: true }}
           />
           
           <StatsCard
-            title="Margem de Lucro"
-            value="34.2%"
-            description="Média do período"
+            title="Taxa de Conversão"
+            value="68.4%"
+            description="Conversas → Pedidos"
             icon={<TrendingUp className="h-6 w-6 text-success" />}
-            trend={{ value: 8.1, isPositive: true }}
+            trend={{ value: 12.1, isPositive: true }}
           />
           
           <StatsCard
-            title="Pedidos"
+            title="Pedidos Gerados"
             value="127"
             description="Este mês"
             icon={<ShoppingCart className="h-6 w-6 text-primary" />}
@@ -42,43 +61,46 @@ export default function Dashboard() {
           />
           
           <StatsCard
-            title="Clientes Ativos"
-            value="48"
-            description="Únicos este mês"
-            icon={<Users className="h-6 w-6 text-primary" />}
-            trend={{ value: 5.2, isPositive: true }}
+            title="Valor Total"
+            value="R$ 248.650"
+            description="Vendas via widget"
+            icon={<DollarSign className="h-6 w-6 text-success" />}
+            trend={{ value: 35.2, isPositive: true }}
           />
         </div>
 
-        {/* Charts and Recent Activity */}
+        {/* Widget Configuration */}
+        <WidgetSnippet />
+
+        {/* Performance Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <MessageSquare className="h-5 w-5 text-primary" />
+                <Activity className="h-5 w-5 text-primary" />
                 <span>Performance da IA</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Taxa de Conversão</span>
-                  <span className="text-lg font-semibold text-success">68.4%</span>
+                  <span className="text-sm text-muted-foreground">Tempo Médio de Resposta</span>
+                  <span className="text-lg font-semibold text-primary">1.2s</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Ticket Médio</span>
-                  <span className="text-lg font-semibold">R$ 1.847</span>
+                  <span className="text-lg font-semibold">R$ 1.956</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Satisfação do Cliente</span>
+                  <span className="text-lg font-semibold text-success">4.8/5</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Upsell Success</span>
                   <span className="text-lg font-semibold text-success">43.2%</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Desconto Médio</span>
-                  <span className="text-lg font-semibold">8.5%</span>
                 </div>
               </div>
             </CardContent>
@@ -87,25 +109,25 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Target className="h-5 w-5 text-primary" />
-                <span>Produtos Top Lucro</span>
+                <Clock className="h-5 w-5 text-primary" />
+                <span>Atividade Recente</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {[
-                  { name: "Parafuso Allen M8", margin: 45.2, sales: 23 },
-                  { name: "Arruela Inox 6mm", margin: 38.7, sales: 19 },
-                  { name: "Porca Sextavada M10", margin: 35.1, sales: 15 },
-                  { name: "Chave Phillips 2.5", margin: 32.8, sales: 12 }
-                ].map((product, index) => (
+                  { time: "há 2 min", action: "Novo pedido de R$ 3.240", customer: "João Silva" },
+                  { time: "há 8 min", action: "Conversa iniciada", customer: "Maria Santos" },
+                  { time: "há 15 min", action: "Pedido convertido R$ 1.890", customer: "Pedro Costa" },
+                  { time: "há 23 min", action: "Nova visita no widget", customer: "Ana Oliveira" }
+                ].map((activity, index) => (
                   <div key={index} className="flex items-center justify-between p-2 bg-muted/30 rounded">
                     <div>
-                      <p className="text-sm font-medium">{product.name}</p>
-                      <p className="text-xs text-muted-foreground">{product.sales} vendas</p>
+                      <p className="text-sm font-medium">{activity.action}</p>
+                      <p className="text-xs text-muted-foreground">{activity.customer}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-success">{product.margin}%</p>
+                      <p className="text-xs text-muted-foreground">{activity.time}</p>
                     </div>
                   </div>
                 ))}
@@ -114,8 +136,8 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Recent Orders */}
-        <RecentOrders />
+        {/* Orders List */}
+        <OrdersList />
       </div>
     </DashboardLayout>
   )
