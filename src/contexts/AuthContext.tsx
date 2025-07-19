@@ -1,13 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { 
-  User, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged 
-} from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '@/config/firebase';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DistributorProfile {
   id: string;
@@ -39,54 +32,96 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [distributorProfile, setDistributorProfile] = useState<DistributorProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      
-      if (user) {
-        // Fetch distributor profile
-        const profileDoc = await getDoc(doc(db, 'distributors', user.uid));
-        if (profileDoc.exists()) {
-          setDistributorProfile(profileDoc.data() as DistributorProfile);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch distributor profile from Supabase
+          const { data: profile } = await supabase
+            .from('distributors')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profile) {
+            setDistributorProfile(profile as DistributorProfile);
+          }
+        } else {
+          setDistributorProfile(null);
         }
-      } else {
-        setDistributorProfile(null);
+        
+        setLoading(false);
       }
-      
-      setLoading(false);
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setSession(session);
+        setUser(session.user);
+      } else {
+        setLoading(false);
+      }
     });
 
-    return unsubscribe;
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
   };
 
   const register = async (email: string, password: string, companyName: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    const redirectUrl = `${window.location.origin}/`;
     
-    const widgetId = user.uid.substring(0, 8) + Date.now().toString(36);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
     
-    const distributorProfile: DistributorProfile = {
-      id: user.uid,
-      email: user.email!,
-      companyName,
-      createdAt: new Date(),
-      isActive: true,
-      widgetId
-    };
+    if (error) throw error;
     
-    await setDoc(doc(db, 'distributors', user.uid), distributorProfile);
-    setDistributorProfile(distributorProfile);
+    if (data.user) {
+      const widgetId = data.user.id.substring(0, 8) + Date.now().toString(36);
+      
+      const distributorProfile: DistributorProfile = {
+        id: data.user.id,
+        email: data.user.email!,
+        companyName,
+        createdAt: new Date(),
+        isActive: true,
+        widgetId
+      };
+      
+      // Store profile in Supabase
+      const { error: profileError } = await supabase
+        .from('distributors')
+        .insert([distributorProfile]);
+      
+      if (profileError) throw profileError;
+      
+      setDistributorProfile(distributorProfile);
+    }
   };
 
   const logout = async () => {
-    await signOut(auth);
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
   const value = {
