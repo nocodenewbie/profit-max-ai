@@ -57,19 +57,19 @@ export default function LandingPage() {
       icon: <Clock className="h-8 w-8" />,
       title: "Tempo Perdido",
       description: "Sua equipe gasta horas em pedidos simples que poderiam ser automatizados",
-      color: "text-yellow-500"
+      color: "text-yellow-400"
     },
     {
       icon: <TrendingDown className="h-8 w-8" />,
       title: "Vendas Perdidas",
       description: "Clientes desistem fora do horário comercial sem conseguir fazer pedidos",
-      color: "text-red-500"
+      color: "text-red-400"
     },
     {
       icon: <ShoppingCart className="h-8 w-8" />,
       title: "E-commerce Limitado",
       description: "Sites tradicionais não capturam leads B2B de forma eficiente",
-      color: "text-blue-500"
+      color: "text-blue-400"
     }
   ];
 
@@ -108,7 +108,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-slate-900">
       {/* Hero Section - Dark Theme */}
       <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]"></div>
@@ -147,31 +147,32 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Problem Section */}
-      <div className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Problem Section - Dark Theme */}
+      <div className="py-20 bg-slate-900 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-800/50 to-slate-900"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               O Problema que Você Conhece
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
               Empresas B2B enfrentam desafios únicos que impedem o crescimento das vendas
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {problems.map((problem, index) => (
-              <Card key={index} className="bg-slate-800 border-slate-700 text-white">
+              <Card key={index} className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300">
                 <CardHeader className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className={`p-4 rounded-full bg-slate-700 ${problem.color}`}>
+                    <div className={`p-4 rounded-full bg-slate-700/50 ${problem.color}`}>
                       {problem.icon}
                     </div>
                   </div>
                   <CardTitle className="text-xl text-white">{problem.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-slate-300 text-center">
+                  <p className="text-slate-300 text-center leading-relaxed">
                     {problem.description}
                   </p>
                 </CardContent>
@@ -181,31 +182,32 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Features Section - Dark Theme */}
+      <div className="py-20 bg-slate-800 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 to-slate-800"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Por que escolher nossa plataforma?
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
               Desenvolvida especificamente para o mercado B2B, nossa solução entende as nuances das vendas industriais.
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="text-center border-slate-200 hover:shadow-lg transition-shadow">
-                <CardHeader>
+              <Card key={index} className="bg-slate-700/30 border-slate-600/50 backdrop-blur-sm hover:bg-slate-700/50 transition-all duration-300">
+                <CardHeader className="text-center">
                   <div className="flex justify-center mb-4">
-                    <div className="p-3 bg-primary/10 rounded-full text-primary">
+                    <div className="p-3 bg-blue-500/10 rounded-full text-blue-400 border border-blue-500/20">
                       {feature.icon}
                     </div>
                   </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <CardTitle className="text-xl text-white">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-base">
+                  <CardDescription className="text-base text-slate-300 leading-relaxed">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
@@ -215,65 +217,67 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Stats Section */}
-      <div className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Stats Section - Dark Theme */}
+      <div className="py-20 bg-slate-900 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-800/30 to-slate-900"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="bg-white p-8 rounded-lg shadow-sm">
+            <div className="bg-slate-800/50 p-8 rounded-lg border border-slate-700/50 backdrop-blur-sm">
               <div className="flex items-center justify-center mb-4">
-                <TrendingUp className="h-8 w-8 text-success" />
+                <TrendingUp className="h-8 w-8 text-green-400" />
               </div>
-              <div className="text-4xl font-bold text-foreground mb-2">+340%</div>
-              <p className="text-muted-foreground">Aumento médio em conversões</p>
+              <div className="text-4xl font-bold text-white mb-2">+340%</div>
+              <p className="text-slate-300">Aumento médio em conversões</p>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-sm">
+            <div className="bg-slate-800/50 p-8 rounded-lg border border-slate-700/50 backdrop-blur-sm">
               <div className="flex items-center justify-center mb-4">
-                <Users className="h-8 w-8 text-primary" />
+                <Users className="h-8 w-8 text-blue-400" />
               </div>
-              <div className="text-4xl font-bold text-foreground mb-2">24/7</div>
-              <p className="text-muted-foreground">Atendimento ininterrupto</p>
+              <div className="text-4xl font-bold text-white mb-2">24/7</div>
+              <p className="text-slate-300">Atendimento ininterrupto</p>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-sm">
+            <div className="bg-slate-800/50 p-8 rounded-lg border border-slate-700/50 backdrop-blur-sm">
               <div className="flex items-center justify-center mb-4">
-                <MessageSquare className="h-8 w-8 text-primary" />
+                <MessageSquare className="h-8 w-8 text-purple-400" />
               </div>
-              <div className="text-4xl font-bold text-foreground mb-2">85%</div>
-              <p className="text-muted-foreground">Taxa de satisfação dos clientes</p>
+              <div className="text-4xl font-bold text-white mb-2">85%</div>
+              <p className="text-slate-300">Taxa de satisfação dos clientes</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Pricing Section */}
-      <div className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Pricing Section - Dark Theme */}
+      <div className="py-20 bg-slate-800 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 to-slate-800"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Planos Premium com Suporte Incluído
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-slate-300">
               Escolha a solução ideal para acelerar suas vendas B2B
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {plans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.popular ? 'border-primary shadow-xl scale-105' : 'border-border'}`}>
+              <Card key={index} className={`relative bg-slate-700/30 border-slate-600/50 backdrop-blur-sm ${plan.popular ? 'ring-2 ring-blue-500/50 shadow-xl shadow-blue-500/10 scale-105' : ''}`}>
                 {plan.popular && (
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <div className="bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-medium">
+                    <div className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium">
                       Mais Escolhido
                     </div>
                   </div>
                 )}
                 <CardHeader className="text-center pb-8">
-                  <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
+                  <CardTitle className="text-2xl mb-2 text-white">{plan.name}</CardTitle>
                   <div className="mb-4">
-                    <span className="text-5xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground text-lg">{plan.period}</span>
+                    <span className="text-5xl font-bold text-white">{plan.price}</span>
+                    <span className="text-slate-300 text-lg">{plan.period}</span>
                   </div>
-                  <CardDescription className="text-base">{plan.description}</CardDescription>
-                  <div className="bg-success/10 text-success px-3 py-1 rounded-full text-sm font-medium inline-block mt-2">
+                  <CardDescription className="text-base text-slate-300">{plan.description}</CardDescription>
+                  <div className="bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-sm font-medium inline-block mt-2 border border-green-500/20">
                     ✓ Suporte Especializado Incluído
                   </div>
                 </CardHeader>
@@ -281,15 +285,14 @@ export default function LandingPage() {
                   <ul className="space-y-4 mb-8">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
-                        <Check className="h-5 w-5 text-success mt-0.5 mr-3 flex-shrink-0" />
-                        <span className="text-sm leading-relaxed">{feature}</span>
+                        <Check className="h-5 w-5 text-green-400 mt-0.5 mr-3 flex-shrink-0" />
+                        <span className="text-sm leading-relaxed text-slate-300">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   <Button 
                     asChild 
-                    className="w-full py-6 text-lg" 
-                    variant={plan.popular ? "default" : "outline"}
+                    className={`w-full py-6 text-lg ${plan.popular ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-600 hover:bg-slate-500 text-white'}`}
                     size="lg"
                   >
                     <Link to="/register">
@@ -302,23 +305,24 @@ export default function LandingPage() {
           </div>
           
           <div className="text-center mt-12">
-            <p className="text-muted-foreground">
+            <p className="text-slate-300">
               Todos os planos incluem integração completa e suporte técnico especializado
             </p>
           </div>
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="py-20 bg-slate-900 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+      {/* CTA Section - Dark Theme */}
+      <div className="py-20 bg-slate-900 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-800/50 to-slate-900"></div>
+        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
             Pronto para revolucionar suas vendas?
           </h2>
           <p className="text-lg text-slate-300 mb-8">
             Junte-se a centenas de empresas que já aumentaram suas vendas com nossa IA
           </p>
-          <Button asChild size="lg" className="text-lg px-8 py-4 bg-blue-600 hover:bg-blue-700">
+          <Button asChild size="lg" className="text-lg px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white">
             <Link to="/register">
               Contratar Agora
             </Link>
@@ -326,17 +330,17 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-slate-50 py-12">
+      {/* Footer - Dark Theme */}
+      <footer className="bg-slate-800 py-12 border-t border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center">
             <div className="flex items-center mb-4">
-              <Bot className="h-8 w-8 text-primary mr-2" />
-              <span className="text-xl font-bold text-foreground">
+              <Bot className="h-8 w-8 text-blue-400 mr-2" />
+              <span className="text-xl font-bold text-white">
                 Vendedor Virtual Inteligente
               </span>
             </div>
-            <p className="text-muted-foreground text-center">
+            <p className="text-slate-400 text-center">
               © 2024 Vendedor Virtual Inteligente. Todos os direitos reservados.
             </p>
           </div>
