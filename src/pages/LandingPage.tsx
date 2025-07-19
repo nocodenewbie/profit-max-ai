@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,44 +50,35 @@ export default function LandingPage() {
 
   const plans = [
     {
-      name: "Starter",
-      price: "R$ 97",
-      period: "/mês",
-      description: "Ideal para pequenas empresas",
-      features: [
-        "Até 1.000 conversas/mês",
-        "1 widget personalizado",
-        "Dashboard básico",
-        "Suporte por email"
-      ]
-    },
-    {
       name: "Professional",
-      price: "R$ 297",
+      price: "R$ 489",
       period: "/mês",
-      description: "Para empresas em crescimento",
+      description: "Tudo que você precisa para automatizar vendas B2B",
       features: [
-        "Até 5.000 conversas/mês",
-        "3 widgets personalizados",
-        "Analytics avançadas",
-        "Suporte prioritário",
-        "Integrações via API"
-      ],
-      popular: true
+        "Até 10.000 conversas/mês",
+        "5 widgets personalizados",
+        "Dashboard completo com analytics",
+        "Suporte técnico especializado",
+        "Integrações via API",
+        "Relatórios avançados"
+      ]
     },
     {
       name: "Enterprise",
-      price: "R$ 697",
+      price: "R$ 897",
       period: "/mês",
-      description: "Para grandes operações",
+      description: "IA avançada para vendas com suporte dedicado",
       features: [
         "Conversas ilimitadas",
         "Widgets ilimitados",
-        "Relatórios customizados",
-        "Suporte 24/7",
+        "Analytics avançadas e personalizadas",
+        "Suporte prioritário 24/7",
+        "Gerente de conta dedicado",
         "Integração personalizada",
-        "Gerente de conta dedicado"
-      ]
+        "Treinamento da equipe",
+        "SLA garantido"
+      ],
+      popular: true
     }
   ];
 
@@ -191,52 +183,62 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Planos para cada necessidade
+              Planos Premium com Suporte Incluído
             </h2>
             <p className="text-lg text-muted-foreground">
-              Escolha o plano ideal para sua empresa
+              Escolha a solução ideal para acelerar suas vendas B2B
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {plans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.popular ? 'border-primary shadow-lg' : ''}`}>
+              <Card key={index} className={`relative ${plan.popular ? 'border-primary shadow-xl scale-105' : 'border-border'}`}>
                 {plan.popular && (
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
-                      Mais Popular
+                    <div className="bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-medium">
+                      Mais Escolhido
                     </div>
                   </div>
                 )}
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
+                <CardHeader className="text-center pb-8">
+                  <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
+                  <div className="mb-4">
+                    <span className="text-5xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-muted-foreground text-lg">{plan.period}</span>
                   </div>
-                  <CardDescription>{plan.description}</CardDescription>
+                  <CardDescription className="text-base">{plan.description}</CardDescription>
+                  <div className="bg-success/10 text-success px-3 py-1 rounded-full text-sm font-medium inline-block mt-2">
+                    ✓ Suporte Especializado Incluído
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3 mb-6">
+                  <ul className="space-y-4 mb-8">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start">
                         <Check className="h-5 w-5 text-success mt-0.5 mr-3 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
+                        <span className="text-sm leading-relaxed">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   <Button 
                     asChild 
-                    className="w-full" 
+                    className="w-full py-6 text-lg" 
                     variant={plan.popular ? "default" : "outline"}
+                    size="lg"
                   >
                     <Link to="/register">
-                      Começar Agora
+                      {plan.popular ? "Começar Agora" : "Escolher Plano"}
                     </Link>
                   </Button>
                 </CardContent>
               </Card>
             ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <p className="text-muted-foreground">
+              Todos os planos incluem integração gratuita e suporte técnico especializado
+            </p>
           </div>
         </div>
       </div>
@@ -273,7 +275,7 @@ export default function LandingPage() {
             </p>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
