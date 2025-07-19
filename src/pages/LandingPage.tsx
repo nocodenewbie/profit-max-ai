@@ -11,7 +11,11 @@ import {
   MessageSquare,
   TrendingUp,
   Users,
-  Check
+  Check,
+  Clock,
+  TrendingDown,
+  ShoppingCart,
+  Play
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -45,6 +49,27 @@ export default function LandingPage() {
       icon: <MessageSquare className="h-6 w-6" />,
       title: "Conversas Naturais",
       description: "Chat fluido que converte visitantes em pedidos qualificados"
+    }
+  ];
+
+  const problems = [
+    {
+      icon: <Clock className="h-8 w-8" />,
+      title: "Tempo Perdido",
+      description: "Sua equipe gasta horas em pedidos simples que poderiam ser automatizados",
+      color: "text-yellow-500"
+    },
+    {
+      icon: <TrendingDown className="h-8 w-8" />,
+      title: "Vendas Perdidas",
+      description: "Clientes desistem fora do horário comercial sem conseguir fazer pedidos",
+      color: "text-red-500"
+    },
+    {
+      icon: <ShoppingCart className="h-8 w-8" />,
+      title: "E-commerce Limitado",
+      description: "Sites tradicionais não capturam leads B2B de forma eficiente",
+      color: "text-blue-500"
     }
   ];
 
@@ -83,47 +108,81 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-background">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+    <div className="min-h-screen">
+      {/* Hero Section - Dark Theme */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
           <div className="text-center">
             <div className="flex items-center justify-center mb-6">
-              <div className="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+              <div className="bg-yellow-500/10 text-yellow-400 px-6 py-3 rounded-full text-sm font-medium flex items-center gap-2 border border-yellow-500/20">
                 <Zap className="h-4 w-4" />
-                Powered by Inteligência Artificial
+                ⚡ Powered by Inteligência Artificial
               </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-8">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight">
               Contrate seu Vendedor<br />
-              <span className="text-primary">Perfeito. Hoje.</span>
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
+                Perfeito. Hoje.
+              </span>
             </h1>
-            <div className="mb-8 max-w-4xl mx-auto space-y-4">
-              <p className="text-xl md:text-2xl text-muted-foreground">
+            <div className="mb-12 max-w-4xl mx-auto space-y-6">
+              <p className="text-xl md:text-2xl text-slate-300 leading-relaxed">
                 Você já parou para pensar quanto tempo sua equipe de vendas gasta com pedidos simples e repetitivos?
               </p>
-              <p className="text-xl md:text-2xl text-muted-foreground">
+              <p className="text-xl md:text-2xl text-slate-300 leading-relaxed">
                 E quantas vendas você pode estar perdendo fora do horário comercial?
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="text-lg px-8">
-                <Link to="/register">
-                  Ver Planos
-                </Link>
+              <Button size="lg" className="text-lg px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white">
+                <Play className="h-5 w-5 mr-2" />
+                Ver Demonstração
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-lg px-8">
-                <Link to="/login">
-                  Fazer Login
-                </Link>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-slate-600 text-slate-300 hover:bg-slate-800">
+                Saiba Mais
               </Button>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Problem Section */}
+      <div className="py-20 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              O Problema que Você Conhece
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Empresas B2B enfrentam desafios únicos que impedem o crescimento das vendas
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {problems.map((problem, index) => (
+              <Card key={index} className="bg-slate-800 border-slate-700 text-white">
+                <CardHeader className="text-center">
+                  <div className="flex justify-center mb-4">
+                    <div className={`p-4 rounded-full bg-slate-700 ${problem.color}`}>
+                      {problem.icon}
+                    </div>
+                  </div>
+                  <CardTitle className="text-xl text-white">{problem.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-slate-300 text-center">
+                    {problem.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Features Section */}
-      <div className="py-20 bg-card">
+      <div className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -136,7 +195,7 @@ export default function LandingPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="text-center">
+              <Card key={index} className="text-center border-slate-200 hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex justify-center mb-4">
                     <div className="p-3 bg-primary/10 rounded-full text-primary">
@@ -157,24 +216,24 @@ export default function LandingPage() {
       </div>
 
       {/* Stats Section */}
-      <div className="py-20">
+      <div className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div>
+            <div className="bg-white p-8 rounded-lg shadow-sm">
               <div className="flex items-center justify-center mb-4">
                 <TrendingUp className="h-8 w-8 text-success" />
               </div>
               <div className="text-4xl font-bold text-foreground mb-2">+340%</div>
               <p className="text-muted-foreground">Aumento médio em conversões</p>
             </div>
-            <div>
+            <div className="bg-white p-8 rounded-lg shadow-sm">
               <div className="flex items-center justify-center mb-4">
                 <Users className="h-8 w-8 text-primary" />
               </div>
               <div className="text-4xl font-bold text-foreground mb-2">24/7</div>
               <p className="text-muted-foreground">Atendimento ininterrupto</p>
             </div>
-            <div>
+            <div className="bg-white p-8 rounded-lg shadow-sm">
               <div className="flex items-center justify-center mb-4">
                 <MessageSquare className="h-8 w-8 text-primary" />
               </div>
@@ -186,7 +245,7 @@ export default function LandingPage() {
       </div>
 
       {/* Pricing Section */}
-      <div className="py-20 bg-card">
+      <div className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -251,15 +310,15 @@ export default function LandingPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="py-20">
+      <div className="py-20 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Pronto para revolucionar suas vendas?
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
+          <p className="text-lg text-slate-300 mb-8">
             Junte-se a centenas de empresas que já aumentaram suas vendas com nossa IA
           </p>
-          <Button asChild size="lg" className="text-lg px-8">
+          <Button asChild size="lg" className="text-lg px-8 py-4 bg-blue-600 hover:bg-blue-700">
             <Link to="/register">
               Contratar Agora
             </Link>
@@ -268,7 +327,7 @@ export default function LandingPage() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-foreground/5 py-12">
+      <footer className="bg-slate-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center">
             <div className="flex items-center mb-4">
