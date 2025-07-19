@@ -88,21 +88,28 @@ export default function LandingPage() {
       <div className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
           <div className="text-center">
-            <div className="flex items-center justify-center mb-8">
-              <Bot className="h-16 w-16 text-primary" />
+            <div className="flex items-center justify-center mb-6">
+              <div className="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Powered by Inteligência Artificial
+              </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-              Vendedor Virtual<br />
-              <span className="text-primary">Inteligente</span>
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-8">
+              Contrate seu Vendedor<br />
+              <span className="text-primary">Perfeito. Hoje.</span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Transforme visitantes em pedidos qualificados com nossa IA especializada em vendas B2B. 
-              Integre em minutos, venda 24/7.
-            </p>
+            <div className="mb-8 max-w-4xl mx-auto space-y-4">
+              <p className="text-xl md:text-2xl text-muted-foreground">
+                Você já parou para pensar quanto tempo sua equipe de vendas gasta com pedidos simples e repetitivos?
+              </p>
+              <p className="text-xl md:text-2xl text-muted-foreground">
+                E quantas vendas você pode estar perdendo fora do horário comercial?
+              </p>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="text-lg px-8">
                 <Link to="/register">
-                  Começar Grátis
+                  Ver Planos
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="text-lg px-8">
@@ -227,7 +234,7 @@ export default function LandingPage() {
                     size="lg"
                   >
                     <Link to="/register">
-                      {plan.popular ? "Começar Agora" : "Escolher Plano"}
+                      {plan.popular ? "Contratar Agora" : "Escolher Plano"}
                     </Link>
                   </Button>
                 </CardContent>
@@ -237,7 +244,7 @@ export default function LandingPage() {
           
           <div className="text-center mt-12">
             <p className="text-muted-foreground">
-              Todos os planos incluem integração gratuita e suporte técnico especializado
+              Todos os planos incluem integração completa e suporte técnico especializado
             </p>
           </div>
         </div>
@@ -254,7 +261,7 @@ export default function LandingPage() {
           </p>
           <Button asChild size="lg" className="text-lg px-8">
             <Link to="/register">
-              Criar Conta Grátis
+              Contratar Agora
             </Link>
           </Button>
         </div>
