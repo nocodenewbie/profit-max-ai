@@ -16,6 +16,9 @@ import {
   ShoppingCart,
   Play
 } from 'lucide-react';
+import PersonaSection from '@/components/landing/PersonaSection';
+import StepsSection from '@/components/landing/StepsSection';
+import FinalCTASection from '@/components/landing/FinalCTASection';
 
 export default function LandingPage() {
   const features = [
@@ -106,6 +109,13 @@ export default function LandingPage() {
     }
   ];
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-900">
       {/* Header Navigation */}
@@ -120,6 +130,40 @@ export default function LandingPage() {
                 className="h-8 w-8"
               />
             </div>
+            
+            {/* Navigation Menu */}
+            <nav className="hidden md:flex items-center space-x-8">
+              <button 
+                onClick={() => scrollToSection('inicio')}
+                className="text-slate-300 hover:text-white transition-colors"
+              >
+                Início
+              </button>
+              <button 
+                onClick={() => scrollToSection('problemas')}
+                className="text-slate-300 hover:text-white transition-colors"
+              >
+                Problemas
+              </button>
+              <button 
+                onClick={() => scrollToSection('solucoes')}
+                className="text-slate-300 hover:text-white transition-colors"
+              >
+                Soluções
+              </button>
+              <button 
+                onClick={() => scrollToSection('planos')}
+                className="text-slate-300 hover:text-white transition-colors"
+              >
+                Planos
+              </button>
+              <button 
+                onClick={() => scrollToSection('contato')}
+                className="text-slate-300 hover:text-white transition-colors"
+              >
+                Contato
+              </button>
+            </nav>
             
             {/* Navigation Buttons */}
             <div className="flex items-center space-x-4">
@@ -143,8 +187,8 @@ export default function LandingPage() {
 
       {/* Add padding-top to account for fixed header */}
       <div className="pt-16">
-        {/* Hero Section - Dark Theme */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Hero Section */}
+        <div id="inicio" className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
             <div className="text-center">
@@ -181,8 +225,8 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Problem Section - Dark Theme */}
-        <div className="py-20 bg-slate-900 relative">
+        {/* Problem Section */}
+        <div id="problemas" className="py-20 bg-slate-900 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-slate-800/50 to-slate-900"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -216,8 +260,11 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Features Section - Dark Theme */}
-        <div className="py-20 bg-slate-800 relative">
+        {/* New Persona Section */}
+        <PersonaSection />
+
+        {/* Features Section */}
+        <div id="solucoes" className="py-20 bg-slate-800 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 to-slate-800"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -251,7 +298,10 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Stats Section - Dark Theme */}
+        {/* New Steps Section */}
+        <StepsSection />
+
+        {/* Stats Section */}
         <div className="py-20 bg-slate-900 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-slate-800/30 to-slate-900"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -281,8 +331,8 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Pricing Section - Dark Theme */}
-        <div className="py-20 bg-slate-800 relative">
+        {/* Pricing Section */}
+        <div id="planos" className="py-20 bg-slate-800 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 to-slate-800"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -346,25 +396,12 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* CTA Section - Dark Theme */}
-        <div className="py-20 bg-slate-900 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-800/50 to-slate-900"></div>
-          <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-              Pronto para revolucionar suas vendas?
-            </h2>
-            <p className="text-lg text-slate-300 mb-8">
-              Junte-se a centenas de empresas que já aumentaram suas vendas com nossa IA
-            </p>
-            <Button asChild size="lg" className="text-lg px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white">
-              <Link to="/register">
-                Contratar Agora
-              </Link>
-            </Button>
-          </div>
+        {/* New Final CTA Section */}
+        <div id="contato">
+          <FinalCTASection />
         </div>
 
-        {/* Footer - Dark Theme */}
+        {/* Footer */}
         <footer className="bg-slate-800 py-12 border-t border-slate-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center">
