@@ -15,8 +15,8 @@ export function WidgetSnippet() {
   (function() {
     var script = document.createElement('script');
     script.src = 'https://vendedor-virtual.com/widget.js';
-    script.setAttribute('data-widget-id', '${distributorProfile?.widgetId || 'YOUR_WIDGET_ID'}');
-    script.setAttribute('data-company', '${distributorProfile?.companyName || 'Your Company'}');
+    script.setAttribute('data-widget-id', '${distributorProfile?.widget_id || 'YOUR_WIDGET_ID'}');
+    script.setAttribute('data-company', '${distributorProfile?.company_name || 'Your Company'}');
     document.head.appendChild(script);
   })();
 </script>`;
@@ -54,7 +54,7 @@ export function WidgetSnippet() {
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary">
-              ID: {distributorProfile?.widgetId}
+              ID: {distributorProfile?.widget_id}
             </Badge>
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-1" />

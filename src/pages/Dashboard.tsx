@@ -26,7 +26,7 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <Bot className="h-12 w-12" />
             <div>
-              <h2 className="text-2xl font-bold">Bem-vindo, {distributorProfile?.companyName}!</h2>
+              <h2 className="text-2xl font-bold">Bem-vindo, {distributorProfile?.company_name}!</h2>
               <p className="text-primary-foreground/80">
                 Seu vendedor virtual está funcionando 24/7 para converter visitantes em pedidos.
               </p>

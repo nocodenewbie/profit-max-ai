@@ -114,7 +114,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5 text-sm font-medium">
-                    {distributorProfile?.companyName}
+                    {distributorProfile?.company_name}
                   </div>
                   <div className="px-2 py-1.5 text-xs text-muted-foreground">
                     {distributorProfile?.email}

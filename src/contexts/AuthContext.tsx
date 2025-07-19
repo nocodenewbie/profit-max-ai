@@ -5,10 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 interface DistributorProfile {
   id: string;
   email: string;
-  companyName: string;
-  createdAt: Date;
-  isActive: boolean;
-  widgetId: string;
+  company_name: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  widget_id: string;
 }
 
 interface AuthContextType {
@@ -99,13 +100,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (data.user) {
       const widgetId = data.user.id.substring(0, 8) + Date.now().toString(36);
       
-      const distributorProfile: DistributorProfile = {
+      const distributorProfile = {
         id: data.user.id,
         email: data.user.email!,
-        companyName,
-        createdAt: new Date(),
-        isActive: true,
-        widgetId
+        company_name: companyName,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_active: true,
+        widget_id: widgetId
       };
       
       // Store profile in Supabase
