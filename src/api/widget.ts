@@ -1,19 +1,11 @@
 
-import { db } from '@/config/firebase';
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  doc, 
-  getDoc, 
-  query, 
-  where, 
-  getDocs,
-  serverTimestamp 
-} from 'firebase/firestore';
+// This file is deprecated and replaced by the secure Edge Function at supabase/functions/widget-chat
+// It remains here for backwards compatibility but should not be used in production
 
-// OpenAI Integration (will be moved to environment variables)
-const OPENAI_API_KEY = 'your-openai-api-key'; // This should be in environment variables
+console.warn('Using deprecated widget API - please migrate to Edge Functions');
+
+// OpenAI Integration - DEPRECATED: Use Edge Functions instead
+const OPENAI_API_KEY = ""; // Removed for security - use Edge Functions
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -75,106 +67,13 @@ INFORMAÇÕES A EXTRAIR:
 Quando tiver informações suficientes para um pedido, estruture os dados de forma clara.`;
 
 export async function handleWidgetChat(request: WidgetChatRequest) {
-  try {
-    // Get distributor info from widget ID
-    const distributorsQuery = query(
-      collection(db, 'distributors'),
-      where('widgetId', '==', request.widgetId)
-    );
-    
-    const distributorSnapshot = await getDocs(distributorsQuery);
-    
-    if (distributorSnapshot.empty) {
-      throw new Error('Widget ID não encontrado');
-    }
-    
-    const distributorDoc = distributorSnapshot.docs[0];
-    const distributorData = distributorDoc.data();
-    const distributorId = distributorDoc.id;
-    
-    // Get or create conversation
-    let conversation: Conversation;
-    let conversationRef;
-    
-    if (request.conversationId) {
-      // Get existing conversation
-      conversationRef = doc(db, 'conversations', request.conversationId);
-      const conversationSnap = await getDoc(conversationRef);
-      
-      if (conversationSnap.exists()) {
-        const conversationData = conversationSnap.data() as Omit<Conversation, 'id'>;
-        conversation = { id: conversationSnap.id, ...conversationData };
-      } else {
-        throw new Error('Conversa não encontrada');
-      }
-    } else {
-      // Create new conversation
-      const newConversation = {
-        widgetId: request.widgetId,
-        distributorId: distributorId,
-        messages: [
-          {
-            role: 'system' as const,
-            content: SYSTEM_PROMPT
-          }
-        ],
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-      
-      conversationRef = await addDoc(collection(db, 'conversations'), newConversation);
-      conversation = {
-        id: conversationRef.id,
-        ...newConversation,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      } as Conversation;
-    }
-    
-    // Add user message to conversation
-    const updatedMessages = [
-      ...conversation.messages,
-      {
-        role: 'user' as const,
-        content: request.message
-      }
-    ];
-    
-    // Call OpenAI API
-    const aiResponse = await callOpenAI(updatedMessages);
-    
-    // Add AI response to messages
-    const finalMessages = [
-      ...updatedMessages,
-      {
-        role: 'assistant' as const,
-        content: aiResponse
-      }
-    ];
-    
-    // Update conversation in Firestore
-    await updateDoc(conversationRef, {
-      messages: finalMessages,
-      updatedAt: serverTimestamp()
-    });
-    
-    // Try to extract structured data from conversation
-    await extractOrderData(conversation.id, finalMessages, distributorId);
-    
-    return {
-      success: true,
-      response: aiResponse,
-      conversationId: conversation.id
-    };
-    
-  } catch (error) {
-    console.error('Widget chat error:', error);
-    return {
-      success: false,
-      response: 'Desculpe, ocorreu um erro interno. Tente novamente em alguns momentos.',
-      error: error instanceof Error ? error.message : 'Erro desconhecido'
-    };
-  }
+  console.warn('DEPRECATED: This function is deprecated. Use the Edge Function at /supabase/functions/widget-chat instead');
+  
+  return {
+    success: false,
+    response: 'Este serviço foi migrado para um sistema mais seguro. Entre em contato com o suporte.',
+    error: 'Service migrated to Edge Functions'
+  };
 }
 
 async function callOpenAI(messages: ChatMessage[]): Promise<string> {
@@ -226,63 +125,6 @@ async function callOpenAI(messages: ChatMessage[]): Promise<string> {
 }
 
 async function extractOrderData(conversationId: string, messages: ChatMessage[], distributorId: string) {
-  try {
-    // Analyze conversation to extract potential order data
-    const conversationText = messages
-      .filter(msg => msg.role !== 'system')
-      .map(msg => `${msg.role}: ${msg.content}`)
-      .join('\n');
-    
-    // Simple extraction logic (in production, this would use more sophisticated NLP)
-    const extractedData = {
-      products: [] as string[],
-      customerInfo: {} as any,
-      hasOrderIntent: false
-    };
-    
-    // Extract products (simple keyword matching)
-    const productKeywords = ['parafuso', 'porca', 'arruela', 'chave', 'furadeira', 'broca', 'serra'];
-    productKeywords.forEach(keyword => {
-      if (conversationText.toLowerCase().includes(keyword)) {
-        extractedData.products.push(keyword);
-      }
-    });
-    
-    // Extract email
-    const emailMatch = conversationText.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/);
-    if (emailMatch) {
-      extractedData.customerInfo.email = emailMatch[0];
-    }
-    
-    // Extract phone
-    const phoneMatch = conversationText.match(/\b\(?([0-9]{2})\)?\s?([0-9]{4,5})-?([0-9]{4})\b/);
-    if (phoneMatch) {
-      extractedData.customerInfo.phone = phoneMatch[0];
-    }
-    
-    // Check for order intent
-    const orderKeywords = ['orçamento', 'comprar', 'pedido', 'preço', 'valor', 'quantidade'];
-    extractedData.hasOrderIntent = orderKeywords.some(keyword => 
-      conversationText.toLowerCase().includes(keyword)
-    );
-    
-    // If we have enough data, create/update an order
-    if (extractedData.hasOrderIntent && (extractedData.products.length > 0 || extractedData.customerInfo.email)) {
-      const orderData = {
-        conversationId,
-        distributorId,
-        products: extractedData.products,
-        customerInfo: extractedData.customerInfo,
-        status: 'potential' as const,
-        source: 'widget',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-      
-      await addDoc(collection(db, 'orders'), orderData);
-    }
-    
-  } catch (error) {
-    console.error('Error extracting order data:', error);
-  }
+  console.warn('DEPRECATED: extractOrderData function is deprecated');
+  // This functionality has been moved to the Edge Function
 }

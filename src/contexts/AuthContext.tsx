@@ -40,21 +40,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Use setTimeout to defer async operations and prevent infinite loops
         if (session?.user) {
-          // Fetch distributor profile from Supabase
-          const { data: profile } = await supabase
-            .from('distributors')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profile) {
-            setDistributorProfile(profile as DistributorProfile);
-          }
+          setTimeout(async () => {
+            try {
+              const { data: profile } = await supabase
+                .from('distributors')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+              
+              if (profile) {
+                setDistributorProfile(profile as DistributorProfile);
+              }
+            } catch (error) {
+              console.error('Error fetching distributor profile:', error);
+              setDistributorProfile(null);
+            }
+          }, 0);
         } else {
           setDistributorProfile(null);
         }

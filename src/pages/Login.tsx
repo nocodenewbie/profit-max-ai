@@ -18,19 +18,39 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Input validation
+    if (!email || !email.includes('@') || email.length > 254) {
+      toast({
+        title: "Email inválido",
+        description: "Por favor, insira um email válido.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!password || password.length < 6) {
+      toast({
+        title: "Senha inválida",
+        description: "A senha deve ter pelo menos 6 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await login(email.trim().toLowerCase(), password);
       navigate('/dashboard');
       toast({
         title: "Login realizado com sucesso",
         description: "Bem-vindo ao Vendedor Virtual Inteligente",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erro no login",
-        description: "Email ou senha incorretos",
+        description: error.message || "Email ou senha incorretos",
         variant: "destructive",
       });
     } finally {

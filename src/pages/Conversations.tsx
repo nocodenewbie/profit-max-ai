@@ -15,8 +15,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '@/config/firebase';
+// Firebase integration removed for security - using Supabase instead
 
 interface Conversation {
   id: string;
@@ -52,29 +51,9 @@ export default function Conversations() {
     if (!distributorProfile) return;
 
     try {
-      const conversationsQuery = query(
-        collection(db, 'conversations'),
-        where('distributorId', '==', distributorProfile.id),
-        orderBy('updatedAt', 'desc')
-      );
-
-      const snapshot = await getDocs(conversationsQuery);
-      const conversationsData = snapshot.docs.map(doc => {
-        const data = doc.data();
-        const messages = data.messages || [];
-        const userMessages = messages.filter((m: any) => m.role === 'user');
-        
-        return {
-          id: doc.id,
-          ...data,
-          lastMessage: userMessages[userMessages.length - 1]?.content || 'Conversa iniciada',
-          lastMessageTime: data.updatedAt?.toDate() || new Date(),
-          messageCount: userMessages.length,
-          status: data.status || 'active'
-        } as Conversation;
-      });
-
-      setConversations(conversationsData);
+      // TODO: Implement with Supabase integration
+      // For now, showing empty state as Firebase is deprecated
+      setConversations([]);
     } catch (error) {
       console.error('Error loading conversations:', error);
     } finally {

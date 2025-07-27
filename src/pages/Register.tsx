@@ -21,6 +21,34 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Input validation
+    if (!email || !email.includes('@') || email.length > 254) {
+      toast({
+        title: "Email inválido",
+        description: "Por favor, insira um email válido.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!password || password.length < 8) {
+      toast({
+        title: "Senha muito fraca",
+        description: "A senha deve ter pelo menos 8 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!companyName || companyName.trim().length < 2) {
+      toast({
+        title: "Nome da empresa inválido",
+        description: "O nome da empresa deve ter pelo menos 2 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (password !== confirmPassword) {
       toast({
         title: "Erro no registro",
@@ -33,16 +61,16 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      await register(email, password, companyName);
+      await register(email.trim().toLowerCase(), password, companyName.trim());
       navigate('/dashboard');
       toast({
         title: "Conta criada com sucesso",
         description: "Bem-vindo ao Vendedor Virtual Inteligente",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erro no registro",
-        description: "Não foi possível criar a conta. Tente novamente.",
+        description: error.message || "Não foi possível criar a conta. Tente novamente.",
         variant: "destructive",
       });
     } finally {
