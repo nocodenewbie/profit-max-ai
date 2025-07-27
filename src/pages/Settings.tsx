@@ -7,11 +7,16 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Upload, Download, Settings2, Bot, Percent, FileText, DollarSign, Globe } from "lucide-react"
+import { Upload, Download, Settings2, Bot, Percent, FileText, DollarSign, Globe, Plus, Trash2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { Badge } from "@/components/ui/badge"
+
+interface DiscountTier {
+  min_value: number
+  discount_percentage: number
+}
 
 interface DistributorConfig {
   id?: string
@@ -20,7 +25,7 @@ interface DistributorConfig {
   default_discount_percentage: number
   max_discount_percentage: number
   volume_discount_enabled: boolean
-  volume_discount_rules: any
+  volume_discount_rules: DiscountTier[]
   catalog_file_url?: string
   catalog_file_name?: string
   catalog_uploaded_at?: string
@@ -69,8 +74,12 @@ export default function Settings() {
       if (data) {
         setConfig({
           ...data,
-          volume_discount_rules: Array.isArray(data.volume_discount_rules) ? data.volume_discount_rules : [],
-          delivery_regions: Array.isArray(data.delivery_regions) ? data.delivery_regions : ['Nacional']
+          volume_discount_rules: Array.isArray(data.volume_discount_rules) 
+            ? (data.volume_discount_rules as unknown as DiscountTier[])
+            : [],
+          delivery_regions: Array.isArray(data.delivery_regions) 
+            ? (data.delivery_regions as unknown as string[])
+            : ['Nacional']
         })
       }
     } catch (error: any) {
@@ -89,12 +98,16 @@ export default function Settings() {
     
     setSaving(true)
     try {
+      const configToSave = {
+        ...config,
+        distributor_id: user.id,
+        volume_discount_rules: config.volume_discount_rules as any,
+        delivery_regions: config.delivery_regions as any
+      }
+
       const { data, error } = await supabase
         .from('distributor_configs')
-        .upsert({
-          ...config,
-          distributor_id: user.id
-        })
+        .upsert(configToSave)
         .select()
         .single()
 
@@ -102,8 +115,12 @@ export default function Settings() {
 
       setConfig({
         ...data,
-        volume_discount_rules: Array.isArray(data.volume_discount_rules) ? data.volume_discount_rules : [],
-        delivery_regions: Array.isArray(data.delivery_regions) ? data.delivery_regions : ['Nacional']
+        volume_discount_rules: Array.isArray(data.volume_discount_rules) 
+          ? (data.volume_discount_rules as unknown as DiscountTier[])
+          : [],
+        delivery_regions: Array.isArray(data.delivery_regions) 
+          ? (data.delivery_regions as unknown as string[])
+          : ['Nacional']
       })
       toast({
         title: "Configurações salvas",
@@ -118,6 +135,62 @@ export default function Settings() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const processCsvProducts = async (csvContent: string) => {
+    const lines = csvContent.split('\n').filter(line => line.trim())
+    if (lines.length < 2) throw new Error('Arquivo CSV deve conter cabeçalho e pelo menos um produto')
+
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+    const requiredHeaders = ['sku', 'nome produto', 'preço de custo', 'preço de venda', 'margem de lucro', 'categoria do produto']
+    
+    const missingHeaders = requiredHeaders.filter(required => 
+      !headers.some(header => header.includes(required.toLowerCase()))
+    )
+    
+    if (missingHeaders.length > 0) {
+      throw new Error(`Colunas obrigatórias não encontradas: ${missingHeaders.join(', ')}`)
+    }
+
+    // Clear existing products
+    await supabase
+      .from('products')
+      .delete()
+      .eq('distributor_id', user.id)
+
+    const products = []
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim())
+      if (values.length < headers.length) continue
+
+      const product = {
+        distributor_id: user.id,
+        sku: values[headers.findIndex(h => h.includes('sku'))] || '',
+        product_name: values[headers.findIndex(h => h.includes('nome'))] || '',
+        cost_price: parseFloat(values[headers.findIndex(h => h.includes('custo'))] || '0'),
+        selling_price: parseFloat(values[headers.findIndex(h => h.includes('venda'))] || '0'),
+        profit_margin: parseFloat(values[headers.findIndex(h => h.includes('margem'))] || '0'),
+        category: values[headers.findIndex(h => h.includes('categoria'))] || '',
+        description: values[headers.findIndex(h => h.includes('descrição')) || headers.findIndex(h => h.includes('descricao'))] || '',
+        technical_specs: values[headers.findIndex(h => h.includes('ficha') || h.includes('técnica'))] || ''
+      }
+
+      if (product.sku && product.product_name) {
+        products.push(product)
+      }
+    }
+
+    if (products.length === 0) {
+      throw new Error('Nenhum produto válido encontrado no arquivo')
+    }
+
+    const { error: insertError } = await supabase
+      .from('products')
+      .insert(products)
+
+    if (insertError) throw insertError
+
+    return products.length
   }
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,6 +211,13 @@ export default function Settings() {
         .from('product-catalogs')
         .getPublicUrl(fileName)
 
+      // Process CSV files to extract products
+      let productsProcessed = 0
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        const fileContent = await file.text()
+        productsProcessed = await processCsvProducts(fileContent)
+      }
+
       setConfig(prev => ({
         ...prev,
         catalog_file_url: urlData.publicUrl,
@@ -147,7 +227,9 @@ export default function Settings() {
 
       toast({
         title: "Catálogo enviado",
-        description: "Arquivo carregado com sucesso!"
+        description: file.name.toLowerCase().endsWith('.csv') 
+          ? `Arquivo carregado e ${productsProcessed} produtos processados com sucesso!`
+          : "Arquivo carregado com sucesso!"
       })
     } catch (error: any) {
       toast({
@@ -158,6 +240,20 @@ export default function Settings() {
     } finally {
       setUploading(false)
     }
+  }
+
+  const downloadTemplate = () => {
+    const csvContent = "SKU,Nome Produto,Preço de Custo,Preço de Venda,Margem de Lucro,Categoria do Produto,Descrição,Ficha Técnica\n" +
+      "EX001,Parafuso M8x20,0.50,1.20,140,Fixação,Parafuso de aço carbono,Resistência: 8.8\n" +
+      "EX002,Porca M8,0.30,0.80,166,Fixação,Porca sextavada,Material: Aço zincado"
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'template-catalogo.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   if (loading) {
@@ -265,6 +361,89 @@ export default function Settings() {
               />
               <Label htmlFor="volume_discount">Habilitar desconto por volume</Label>
             </div>
+
+            {config.volume_discount_enabled && (
+              <div className="space-y-4">
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Faixas de Desconto</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (config.volume_discount_rules.length < 3) {
+                        setConfig(prev => ({
+                          ...prev,
+                          volume_discount_rules: [
+                            ...prev.volume_discount_rules,
+                            { min_value: 0, discount_percentage: 0 }
+                          ]
+                        }))
+                      }
+                    }}
+                    disabled={config.volume_discount_rules.length >= 3}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Adicionar Faixa
+                  </Button>
+                </div>
+                
+                {config.volume_discount_rules.map((tier, index) => (
+                  <div key={index} className="flex items-center space-x-2 p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <Label className="text-sm">Valor mínimo (R$)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={tier.min_value}
+                        onChange={(e) => {
+                          const newTiers = [...config.volume_discount_rules]
+                          newTiers[index].min_value = parseFloat(e.target.value) || 0
+                          setConfig(prev => ({ ...prev, volume_discount_rules: newTiers }))
+                        }}
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Label className="text-sm">Desconto (%)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value={tier.discount_percentage}
+                        onChange={(e) => {
+                          const newTiers = [...config.volume_discount_rules]
+                          newTiers[index].discount_percentage = parseFloat(e.target.value) || 0
+                          setConfig(prev => ({ ...prev, volume_discount_rules: newTiers }))
+                        }}
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newTiers = config.volume_discount_rules.filter((_, i) => i !== index)
+                        setConfig(prev => ({ ...prev, volume_discount_rules: newTiers }))
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                
+                {config.volume_discount_rules.length === 0 && (
+                  <div className="text-center text-muted-foreground py-4">
+                    <p>Nenhuma faixa de desconto configurada</p>
+                    <p className="text-sm">Clique em "Adicionar Faixa" para começar</p>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -313,8 +492,19 @@ export default function Settings() {
               </div>
             )}
             
-            <div>
-              <Label htmlFor="catalog_upload">Novo Catálogo</Label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="catalog_upload">Novo Catálogo</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadTemplate}
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Baixar Template CSV
+                </Button>
+              </div>
               <Input
                 id="catalog_upload"
                 type="file"
@@ -323,6 +513,9 @@ export default function Settings() {
                 disabled={uploading}
               />
               {uploading && <p className="text-sm text-muted-foreground mt-1">Enviando arquivo...</p>}
+              <p className="text-xs text-muted-foreground">
+                Para arquivos CSV, use o template acima com as colunas: SKU, Nome Produto, Preço de Custo, Preço de Venda, Margem de Lucro, Categoria do Produto, Descrição, Ficha Técnica
+              </p>
             </div>
           </CardContent>
         </Card>

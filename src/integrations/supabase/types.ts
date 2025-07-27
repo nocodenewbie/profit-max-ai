@@ -109,6 +109,117 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string
+          cost_price: number
+          created_at: string
+          description: string | null
+          distributor_id: string
+          id: string
+          product_name: string
+          profit_margin: number
+          selling_price: number
+          sku: string
+          technical_specs: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          cost_price: number
+          created_at?: string
+          description?: string | null
+          distributor_id: string
+          id?: string
+          product_name: string
+          profit_margin: number
+          selling_price: number
+          sku: string
+          technical_specs?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cost_price?: number
+          created_at?: string
+          description?: string | null
+          distributor_id?: string
+          id?: string
+          product_name?: string
+          profit_margin?: number
+          selling_price?: number
+          sku?: string
+          technical_specs?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      quotes: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          conversation_id: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          discount_amount: number | null
+          discount_applied: number | null
+          distributor_id: string
+          expires_at: string | null
+          final_value: number
+          id: string
+          notes: string | null
+          quote_items: Json
+          status: string | null
+          total_value: number
+          updated_at: string
+          widget_session_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          discount_amount?: number | null
+          discount_applied?: number | null
+          distributor_id: string
+          expires_at?: string | null
+          final_value?: number
+          id?: string
+          notes?: string | null
+          quote_items?: Json
+          status?: string | null
+          total_value?: number
+          updated_at?: string
+          widget_session_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          discount_amount?: number | null
+          discount_applied?: number | null
+          distributor_id?: string
+          expires_at?: string | null
+          final_value?: number
+          id?: string
+          notes?: string | null
+          quote_items?: Json
+          status?: string | null
+          total_value?: number
+          updated_at?: string
+          widget_session_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

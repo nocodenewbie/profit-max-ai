@@ -81,6 +81,7 @@ serve(async (req) => {
           default_discount_percentage,
           max_discount_percentage,
           volume_discount_enabled,
+          volume_discount_rules,
           minimum_order_value,
           payment_terms,
           delivery_regions,
@@ -110,7 +111,53 @@ serve(async (req) => {
     const minimumOrder = config.minimum_order_value || 0;
     const paymentTerms = config.payment_terms || 'À vista, 30/60/90 dias';
     const deliveryRegions = config.delivery_regions || ['Nacional'];
-    const hasCatalog = config.catalog_file_name ? 'SIM' : 'NÃO';
+    const volumeDiscountRules = config.volume_discount_rules || [];
+
+    // Fetch product catalog for this distributor
+    const { data: products } = await supabase
+      .from('products')
+      .select('sku, product_name, selling_price, profit_margin, category, description, technical_specs')
+      .eq('distributor_id', distributorId)
+      .order('category', { ascending: true })
+
+    // Build product catalog context for AI
+    let productCatalogContext = '';
+    if (products && products.length > 0) {
+      const categorizedProducts = products.reduce((acc: Record<string, any[]>, product) => {
+        if (!acc[product.category]) acc[product.category] = [];
+        acc[product.category].push(product);
+        return acc;
+      }, {});
+
+      productCatalogContext = '\n\nCATÁLOGO DE PRODUTOS DISPONÍVEIS:\n';
+      for (const [category, categoryProducts] of Object.entries(categorizedProducts)) {
+        productCatalogContext += `\n=== ${category.toUpperCase()} ===\n`;
+        categoryProducts.forEach(product => {
+          productCatalogContext += `• ${product.sku}: ${product.product_name} - R$ ${product.selling_price.toFixed(2)} (Margem: ${product.profit_margin}%)\n`;
+          if (product.description) productCatalogContext += `  Descrição: ${product.description}\n`;
+          if (product.technical_specs) productCatalogContext += `  Especificações: ${product.technical_specs}\n`;
+        });
+      }
+    }
+
+    // Build discount rules context
+    let discountContext = '';
+    if (config.volume_discount_enabled && volumeDiscountRules.length > 0) {
+      discountContext = '\n\nREGRAS DE DESCONTO POR VOLUME:\n';
+      volumeDiscountRules.forEach((rule: any) => {
+        discountContext += `• Pedidos acima de R$ ${rule.min_value.toFixed(2)}: ${rule.discount_percentage}% de desconto\n`;
+      });
+      discountContext += `\nDESCONTO MÁXIMO PERMITIDO: ${maxDiscount}%\n`;
+    }
+
+    // Build profit margin intelligence context
+    const profitMarginContext = `\n\nINTELIGÊNCIA COMERCIAL - REGRAS DE NEGOCIAÇÃO:
+• MARGEM BAIXA (< 20%): Evite descontos, foque no valor agregado
+• MARGEM MÉDIA (20-30%): Descontos limitados e cautelosos  
+• MARGEM ALTA (> 30%): Maior flexibilidade para descontos
+• ESTRATÉGIA: Sugira produtos complementares para aumentar valor do pedido
+• IMPORTANTE: Este é um ORÇAMENTO inicial que será validado pela equipe comercial
+• SEMPRE mencione que os preços são para orçamento e sujeitos à aprovação final`;
 
     // Create conversation messages array
     const messages: ChatMessage[] = [
@@ -128,19 +175,23 @@ INFORMAÇÕES DA EMPRESA:
 - Valor mínimo de pedido: R$ ${minimumOrder.toFixed(2)}
 - Condições de pagamento: ${paymentTerms}
 - Regiões de entrega: ${deliveryRegions.join(', ')}
-- Catálogo de produtos disponível: ${hasCatalog}
+${productCatalogContext}
+${discountContext}
+${profitMarginContext}
 
 REGRAS IMPORTANTES:
 - Sempre pergunte o nome do cliente no início da conversa
 - Colete telefone e email se houver interesse em produtos
-- Ofereça descontos dentro dos limites configurados
+- Ofereça descontos inteligentes baseados na margem de lucro dos produtos
+- Use as faixas de desconto por volume quando aplicável
 - Mencione as condições de pagamento quando apropriado
 - Informe sobre regiões de entrega quando perguntado
-- Se o cliente pedir produtos específicos, mencione que você tem acesso ao catálogo completo
+- Use os dados específicos do catálogo para recomendar produtos
 - Sempre tente agendar uma reunião ou visita comercial
 - Mantenha o foco em vendas e seja proativo
+- Lembre que tudo é um ORÇAMENTO sujeito à aprovação
 
-CONTEXTO: Você trabalha para ${distributor.company_name} e seu objetivo é converter visitantes em clientes qualificados.`
+CONTEXTO: Você trabalha para ${distributor.company_name} e seu objetivo é converter visitantes em clientes qualificados através de orçamentos inteligentes.`
       },
       {
         role: 'user',
