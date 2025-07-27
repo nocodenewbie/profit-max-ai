@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Upload, Download, Settings2, Bot, Percent, FileText, DollarSign, Globe, Plus, Trash2 } from "lucide-react"
+import { Upload, Download, Settings2, Bot, Percent, FileText, DollarSign, Globe, Plus, Trash2, RefreshCw, Package } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { Badge } from "@/components/ui/badge"
+import { ProductStats } from "@/components/settings/ProductStats"
+import { ProductsTable } from "@/components/settings/ProductsTable"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface DiscountTier {
   min_value: number
@@ -40,6 +43,8 @@ export default function Settings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [loadingProducts, setLoadingProducts] = useState(false)
+  const [products, setProducts] = useState<any[]>([])
   const [config, setConfig] = useState<DistributorConfig>({
     ai_personality: 'Sou um vendedor especializado em produtos industriais B2B. Sou atencioso, técnico quando necessário, e focado em entender as necessidades do cliente para oferecer as melhores soluções.',
     ai_instructions: 'Sempre pergunte sobre quantidade, prazo de entrega e especificações técnicas. Seja proativo em sugerir produtos complementares.',
@@ -54,6 +59,7 @@ export default function Settings() {
 
   useEffect(() => {
     loadConfig()
+    loadProducts()
   }, [user])
 
   const loadConfig = async () => {
@@ -90,6 +96,31 @@ export default function Settings() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadProducts = async () => {
+    if (!user) return
+    
+    setLoadingProducts(true)
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('distributor_id', user.id)
+        .order('product_name')
+
+      if (error) throw error
+
+      setProducts(data || [])
+    } catch (error: any) {
+      toast({
+        title: "Erro ao carregar produtos",
+        description: error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setLoadingProducts(false)
     }
   }
 
@@ -231,6 +262,11 @@ export default function Settings() {
           ? `Arquivo carregado e ${productsProcessed} produtos processados com sucesso!`
           : "Arquivo carregado com sucesso!"
       })
+
+      // Reload products if CSV was processed
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        loadProducts()
+      }
     } catch (error: any) {
       toast({
         title: "Erro no upload",
@@ -447,6 +483,28 @@ export default function Settings() {
           </CardContent>
         </Card>
 
+        {/* Product Statistics */}
+        {products.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium">Estatísticas do Catálogo</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadProducts}
+                disabled={loadingProducts}
+              >
+                <RefreshCw className={`h-4 w-4 mr-1 ${loadingProducts ? 'animate-spin' : ''}`} />
+                Atualizar
+              </Button>
+            </div>
+            <ProductStats 
+              products={products} 
+              lastImportDate={config.catalog_uploaded_at} 
+            />
+          </div>
+        )}
+
         {/* Product Catalog */}
         <Card>
           <CardHeader>
@@ -519,6 +577,27 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Products Table */}
+        {products.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Package className="h-5 w-5 text-primary" />
+                <span>Produtos do Catálogo</span>
+              </CardTitle>
+              <CardDescription>
+                Visualize e gerencie os produtos importados
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ProductsTable 
+                products={products} 
+                onProductUpdated={loadProducts}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Business Rules */}
         <Card>
