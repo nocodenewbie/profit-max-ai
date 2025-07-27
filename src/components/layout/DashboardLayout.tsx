@@ -1,7 +1,7 @@
 import { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Bell, Search, User, LogOut, Bot, Settings, BarChart3, MessageSquare, Code } from "lucide-react"
+import { Bell, Search, User, LogOut, Bot, Settings, BarChart3, MessageSquare, Package, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/AuthContext"
 import { useNavigate, useLocation } from "react-router-dom"
@@ -70,9 +70,25 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
                 Conversas
               </a>
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
-              <Code className="h-4 w-4 mr-3" />
-              Widget
+            <Button 
+              variant={location.pathname === "/products" ? "default" : "ghost"} 
+              className="w-full justify-start"
+              asChild
+            >
+              <a href="/products">
+                <Package className="h-4 w-4 mr-3" />
+                Produtos
+              </a>
+            </Button>
+            <Button 
+              variant={location.pathname === "/quotes" ? "default" : "ghost"} 
+              className="w-full justify-start"
+              asChild
+            >
+              <a href="/quotes">
+                <FileText className="h-4 w-4 mr-3" />
+                Orçamentos
+              </a>
             </Button>
             <Button 
               variant={location.pathname === "/settings" ? "default" : "ghost"} 

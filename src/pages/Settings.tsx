@@ -7,13 +7,11 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Upload, Download, Settings2, Bot, Percent, FileText, DollarSign, Globe, Plus, Trash2, RefreshCw, Package } from "lucide-react"
+import { Settings2, Bot, Percent, DollarSign, Globe, Plus, Trash2, Code } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { Badge } from "@/components/ui/badge"
-import { ProductStats } from "@/components/settings/ProductStats"
-import { ProductsTable } from "@/components/settings/ProductsTable"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface DiscountTier {
@@ -23,15 +21,10 @@ interface DiscountTier {
 
 interface DistributorConfig {
   id?: string
-  ai_personality: string
-  ai_instructions: string
   default_discount_percentage: number
   max_discount_percentage: number
   volume_discount_enabled: boolean
   volume_discount_rules: DiscountTier[]
-  catalog_file_url?: string
-  catalog_file_name?: string
-  catalog_uploaded_at?: string
   minimum_order_value: number
   payment_terms: string
   delivery_regions: string[]
@@ -42,12 +35,7 @@ export default function Settings() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [loadingProducts, setLoadingProducts] = useState(false)
-  const [products, setProducts] = useState<any[]>([])
   const [config, setConfig] = useState<DistributorConfig>({
-    ai_personality: 'Sou um vendedor especializado em produtos industriais B2B. Sou atencioso, técnico quando necessário, e focado em entender as necessidades do cliente para oferecer as melhores soluções.',
-    ai_instructions: 'Sempre pergunte sobre quantidade, prazo de entrega e especificações técnicas. Seja proativo em sugerir produtos complementares.',
     default_discount_percentage: 0,
     max_discount_percentage: 15,
     volume_discount_enabled: true,
@@ -59,7 +47,6 @@ export default function Settings() {
 
   useEffect(() => {
     loadConfig()
-    loadProducts()
   }, [user])
 
   const loadConfig = async () => {
@@ -79,10 +66,14 @@ export default function Settings() {
 
       if (data) {
         setConfig({
-          ...data,
+          default_discount_percentage: data.default_discount_percentage || 0,
+          max_discount_percentage: data.max_discount_percentage || 15,
+          volume_discount_enabled: data.volume_discount_enabled ?? true,
           volume_discount_rules: Array.isArray(data.volume_discount_rules) 
             ? (data.volume_discount_rules as unknown as DiscountTier[])
             : [],
+          minimum_order_value: data.minimum_order_value || 0,
+          payment_terms: data.payment_terms || 'À vista, 30/60/90 dias',
           delivery_regions: Array.isArray(data.delivery_regions) 
             ? (data.delivery_regions as unknown as string[])
             : ['Nacional']
@@ -96,31 +87,6 @@ export default function Settings() {
       })
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadProducts = async () => {
-    if (!user) return
-    
-    setLoadingProducts(true)
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('distributor_id', user.id)
-        .order('product_name')
-
-      if (error) throw error
-
-      setProducts(data || [])
-    } catch (error: any) {
-      toast({
-        title: "Erro ao carregar produtos",
-        description: error.message,
-        variant: "destructive"
-      })
-    } finally {
-      setLoadingProducts(false)
     }
   }
 
@@ -145,10 +111,14 @@ export default function Settings() {
       if (error) throw error
 
       setConfig({
-        ...data,
+        default_discount_percentage: data.default_discount_percentage || 0,
+        max_discount_percentage: data.max_discount_percentage || 15,
+        volume_discount_enabled: data.volume_discount_enabled ?? true,
         volume_discount_rules: Array.isArray(data.volume_discount_rules) 
           ? (data.volume_discount_rules as unknown as DiscountTier[])
           : [],
+        minimum_order_value: data.minimum_order_value || 0,
+        payment_terms: data.payment_terms || 'À vista, 30/60/90 dias',
         delivery_regions: Array.isArray(data.delivery_regions) 
           ? (data.delivery_regions as unknown as string[])
           : ['Nacional']
@@ -168,130 +138,6 @@ export default function Settings() {
     }
   }
 
-  const processCsvProducts = async (csvContent: string) => {
-    const lines = csvContent.split('\n').filter(line => line.trim())
-    if (lines.length < 2) throw new Error('Arquivo CSV deve conter cabeçalho e pelo menos um produto')
-
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
-    const requiredHeaders = ['sku', 'nome produto', 'preço de custo', 'preço de venda', 'margem de lucro', 'categoria do produto']
-    
-    const missingHeaders = requiredHeaders.filter(required => 
-      !headers.some(header => header.includes(required.toLowerCase()))
-    )
-    
-    if (missingHeaders.length > 0) {
-      throw new Error(`Colunas obrigatórias não encontradas: ${missingHeaders.join(', ')}`)
-    }
-
-    // Clear existing products
-    await supabase
-      .from('products')
-      .delete()
-      .eq('distributor_id', user.id)
-
-    const products = []
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim())
-      if (values.length < headers.length) continue
-
-      const product = {
-        distributor_id: user.id,
-        sku: values[headers.findIndex(h => h.includes('sku'))] || '',
-        product_name: values[headers.findIndex(h => h.includes('nome'))] || '',
-        cost_price: parseFloat(values[headers.findIndex(h => h.includes('custo'))] || '0'),
-        selling_price: parseFloat(values[headers.findIndex(h => h.includes('venda'))] || '0'),
-        profit_margin: parseFloat(values[headers.findIndex(h => h.includes('margem'))] || '0'),
-        category: values[headers.findIndex(h => h.includes('categoria'))] || '',
-        description: values[headers.findIndex(h => h.includes('descrição')) || headers.findIndex(h => h.includes('descricao'))] || '',
-        technical_specs: values[headers.findIndex(h => h.includes('ficha') || h.includes('técnica'))] || ''
-      }
-
-      if (product.sku && product.product_name) {
-        products.push(product)
-      }
-    }
-
-    if (products.length === 0) {
-      throw new Error('Nenhum produto válido encontrado no arquivo')
-    }
-
-    const { error: insertError } = await supabase
-      .from('products')
-      .insert(products)
-
-    if (insertError) throw insertError
-
-    return products.length
-  }
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !user) return
-
-    setUploading(true)
-    try {
-      const fileName = `${user.id}/${Date.now()}-${file.name}`
-      
-      const { error: uploadError } = await supabase.storage
-        .from('product-catalogs')
-        .upload(fileName, file)
-
-      if (uploadError) throw uploadError
-
-      const { data: urlData } = supabase.storage
-        .from('product-catalogs')
-        .getPublicUrl(fileName)
-
-      // Process CSV files to extract products
-      let productsProcessed = 0
-      if (file.name.toLowerCase().endsWith('.csv')) {
-        const fileContent = await file.text()
-        productsProcessed = await processCsvProducts(fileContent)
-      }
-
-      setConfig(prev => ({
-        ...prev,
-        catalog_file_url: urlData.publicUrl,
-        catalog_file_name: file.name,
-        catalog_uploaded_at: new Date().toISOString()
-      }))
-
-      toast({
-        title: "Catálogo enviado",
-        description: file.name.toLowerCase().endsWith('.csv') 
-          ? `Arquivo carregado e ${productsProcessed} produtos processados com sucesso!`
-          : "Arquivo carregado com sucesso!"
-      })
-
-      // Reload products if CSV was processed
-      if (file.name.toLowerCase().endsWith('.csv')) {
-        loadProducts()
-      }
-    } catch (error: any) {
-      toast({
-        title: "Erro no upload",
-        description: error.message,
-        variant: "destructive"
-      })
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  const downloadTemplate = () => {
-    const csvContent = "SKU,Nome Produto,Preço de Custo,Preço de Venda,Margem de Lucro,Categoria do Produto,Descrição,Ficha Técnica\n" +
-      "EX001,Parafuso M8x20,0.50,1.20,140,Fixação,Parafuso de aço carbono,Resistência: 8.8\n" +
-      "EX002,Porca M8,0.30,0.80,166,Fixação,Porca sextavada,Material: Aço zincado"
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'template-catalogo.csv'
-    a.click()
-    window.URL.revokeObjectURL(url)
-  }
-
   if (loading) {
     return (
       <DashboardLayout title="Configurações">
@@ -307,37 +153,26 @@ export default function Settings() {
   return (
     <DashboardLayout title="Configurações">
       <div className="space-y-6">
-        {/* AI Configuration */}
+        {/* Widget Configuration */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Bot className="h-5 w-5 text-primary" />
-              <span>Configuração da IA</span>
+              <Code className="h-5 w-5 text-primary" />
+              <span>Configuração do Widget</span>
             </CardTitle>
             <CardDescription>
-              Defina a personalidade e instruções para o vendedor virtual
+              Configure o widget de chat para seu site
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="ai_personality">Personalidade da IA</Label>
-              <Textarea
-                id="ai_personality"
-                placeholder="Como a IA deve se apresentar aos visitantes..."
-                value={config.ai_personality}
-                onChange={(e) => setConfig(prev => ({ ...prev, ai_personality: e.target.value }))}
-                rows={3}
-              />
-            </div>
-            <div>
-              <Label htmlFor="ai_instructions">Instruções Específicas</Label>
-              <Textarea
-                id="ai_instructions"
-                placeholder="Diretrizes específicas sobre como atuar nas vendas..."
-                value={config.ai_instructions}
-                onChange={(e) => setConfig(prev => ({ ...prev, ai_instructions: e.target.value }))}
-                rows={3}
-              />
+            <div className="p-4 bg-muted rounded-lg">
+              <h4 className="font-medium mb-2">Código do Widget</h4>
+              <p className="text-sm text-muted-foreground mb-2">
+                Copie e cole este código em seu site onde deseja que o chat apareça:
+              </p>
+              <div className="bg-background p-3 rounded border font-mono text-sm">
+                {`<script src="[URL_DO_SEU_SITE]/widget.js"></script>`}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -483,121 +318,6 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Product Statistics */}
-        {products.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Estatísticas do Catálogo</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadProducts}
-                disabled={loadingProducts}
-              >
-                <RefreshCw className={`h-4 w-4 mr-1 ${loadingProducts ? 'animate-spin' : ''}`} />
-                Atualizar
-              </Button>
-            </div>
-            <ProductStats 
-              products={products} 
-              lastImportDate={config.catalog_uploaded_at} 
-            />
-          </div>
-        )}
-
-        {/* Product Catalog */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-info" />
-              <span>Catálogo de Produtos</span>
-            </CardTitle>
-            <CardDescription>
-              Faça upload do catálogo para que a IA conheça seus produtos
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {config.catalog_file_name ? (
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">{config.catalog_file_name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Enviado em {new Date(config.catalog_uploaded_at!).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="secondary">Ativo</Badge>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(config.catalog_file_url, '_blank')}
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    Baixar
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground mb-2">Nenhum catálogo enviado</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Formatos aceitos: PDF, Excel, CSV
-                </p>
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="catalog_upload">Novo Catálogo</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={downloadTemplate}
-                >
-                  <Download className="h-4 w-4 mr-1" />
-                  Baixar Template CSV
-                </Button>
-              </div>
-              <Input
-                id="catalog_upload"
-                type="file"
-                accept=".pdf,.xlsx,.xls,.csv"
-                onChange={handleFileUpload}
-                disabled={uploading}
-              />
-              {uploading && <p className="text-sm text-muted-foreground mt-1">Enviando arquivo...</p>}
-              <p className="text-xs text-muted-foreground">
-                Para arquivos CSV, use o template acima com as colunas: SKU, Nome Produto, Preço de Custo, Preço de Venda, Margem de Lucro, Categoria do Produto, Descrição, Ficha Técnica
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Products Table */}
-        {products.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Package className="h-5 w-5 text-primary" />
-                <span>Produtos do Catálogo</span>
-              </CardTitle>
-              <CardDescription>
-                Visualize e gerencie os produtos importados
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProductsTable 
-                products={products} 
-                onProductUpdated={loadProducts}
-              />
-            </CardContent>
-          </Card>
-        )}
 
         {/* Business Rules */}
         <Card>

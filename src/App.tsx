@@ -12,6 +12,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Conversations from "./pages/Conversations";
+import Products from "./pages/Products";
+import Quotes from "./pages/Quotes";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { WidgetAPI } from "./pages/api/WidgetAPI";
@@ -43,6 +45,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Conversations />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/products" 
+              element={
+                <ProtectedRoute>
+                  <Products />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/quotes" 
+              element={
+                <ProtectedRoute>
+                  <Quotes />
                 </ProtectedRoute>
               } 
             />
