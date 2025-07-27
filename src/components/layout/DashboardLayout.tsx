@@ -74,9 +74,15 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
               <Code className="h-4 w-4 mr-3" />
               Widget
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
-              <Settings className="h-4 w-4 mr-3" />
-              Configurações
+            <Button 
+              variant={location.pathname === "/settings" ? "default" : "ghost"} 
+              className="w-full justify-start"
+              asChild
+            >
+              <a href="/settings">
+                <Settings className="h-4 w-4 mr-3" />
+                Configurações
+              </a>
             </Button>
           </nav>
         </div>

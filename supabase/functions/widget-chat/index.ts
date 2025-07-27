@@ -68,10 +68,25 @@ serve(async (req) => {
                                    .replace(/javascript:/gi, '')
                                    .replace(/on\w+\s*=/gi, '');
 
-    // Verify distributor exists
+    // Verify distributor exists and get configuration
     const { data: distributor, error: distributorError } = await supabase
       .from('distributors')
-      .select('id, is_active')
+      .select(`
+        id, 
+        is_active, 
+        company_name,
+        distributor_configs(
+          ai_personality,
+          ai_instructions,
+          default_discount_percentage,
+          max_discount_percentage,
+          volume_discount_enabled,
+          minimum_order_value,
+          payment_terms,
+          delivery_regions,
+          catalog_file_name
+        )
+      `)
       .eq('id', distributorId)
       .eq('is_active', true)
       .single();
@@ -86,22 +101,46 @@ serve(async (req) => {
       });
     }
 
+    // Get configuration or use defaults
+    const config = distributor.distributor_configs?.[0] || {};
+    const aiPersonality = config.ai_personality || 'Sou um vendedor especializado em produtos industriais B2B. Sou atencioso, técnico quando necessário, e focado em entender as necessidades do cliente para oferecer as melhores soluções.';
+    const aiInstructions = config.ai_instructions || 'Sempre pergunte sobre quantidade, prazo de entrega e especificações técnicas. Seja proativo em sugerir produtos complementares.';
+    const defaultDiscount = config.default_discount_percentage || 0;
+    const maxDiscount = config.max_discount_percentage || 15;
+    const minimumOrder = config.minimum_order_value || 0;
+    const paymentTerms = config.payment_terms || 'À vista, 30/60/90 dias';
+    const deliveryRegions = config.delivery_regions || ['Nacional'];
+    const hasCatalog = config.catalog_file_name ? 'SIM' : 'NÃO';
+
     // Create conversation messages array
     const messages: ChatMessage[] = [
       {
         role: 'system',
-        content: `Você é Max, um vendedor virtual inteligente especializado em atendimento comercial. 
+        content: `${aiPersonality}
 
-INSTRUÇÕES IMPORTANTES:
-- Seja sempre cordial, profissional e focado em vendas
-- Faça perguntas para entender melhor as necessidades do cliente
-- Sempre tente direcionar a conversa para uma venda ou agendamento
-- Se o cliente demonstrar interesse, colete informações de contato (nome, telefone, email)
-- Responda sempre em português brasileiro
-- Mantenha respostas concisas e objetivas
-- Se não souber sobre um produto específico, seja honesto mas mantenha o interesse
+INSTRUÇÕES ESPECÍFICAS:
+${aiInstructions}
 
-CONTEXTO: Você trabalha para uma distribuidora/empresa e seu objetivo é converter visitantes em clientes.`
+INFORMAÇÕES DA EMPRESA:
+- Empresa: ${distributor.company_name}
+- Desconto padrão disponível: ${defaultDiscount}%
+- Desconto máximo autorizado: ${maxDiscount}%
+- Valor mínimo de pedido: R$ ${minimumOrder.toFixed(2)}
+- Condições de pagamento: ${paymentTerms}
+- Regiões de entrega: ${deliveryRegions.join(', ')}
+- Catálogo de produtos disponível: ${hasCatalog}
+
+REGRAS IMPORTANTES:
+- Sempre pergunte o nome do cliente no início da conversa
+- Colete telefone e email se houver interesse em produtos
+- Ofereça descontos dentro dos limites configurados
+- Mencione as condições de pagamento quando apropriado
+- Informe sobre regiões de entrega quando perguntado
+- Se o cliente pedir produtos específicos, mencione que você tem acesso ao catálogo completo
+- Sempre tente agendar uma reunião ou visita comercial
+- Mantenha o foco em vendas e seja proativo
+
+CONTEXTO: Você trabalha para ${distributor.company_name} e seu objetivo é converter visitantes em clientes qualificados.`
       },
       {
         role: 'user',

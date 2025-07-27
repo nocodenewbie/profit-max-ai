@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      distributor_configs: {
+        Row: {
+          ai_instructions: string | null
+          ai_personality: string | null
+          catalog_file_name: string | null
+          catalog_file_url: string | null
+          catalog_uploaded_at: string | null
+          created_at: string
+          default_discount_percentage: number | null
+          delivery_regions: string[] | null
+          distributor_id: string
+          id: string
+          max_discount_percentage: number | null
+          minimum_order_value: number | null
+          payment_terms: string | null
+          updated_at: string
+          volume_discount_enabled: boolean | null
+          volume_discount_rules: Json | null
+        }
+        Insert: {
+          ai_instructions?: string | null
+          ai_personality?: string | null
+          catalog_file_name?: string | null
+          catalog_file_url?: string | null
+          catalog_uploaded_at?: string | null
+          created_at?: string
+          default_discount_percentage?: number | null
+          delivery_regions?: string[] | null
+          distributor_id: string
+          id?: string
+          max_discount_percentage?: number | null
+          minimum_order_value?: number | null
+          payment_terms?: string | null
+          updated_at?: string
+          volume_discount_enabled?: boolean | null
+          volume_discount_rules?: Json | null
+        }
+        Update: {
+          ai_instructions?: string | null
+          ai_personality?: string | null
+          catalog_file_name?: string | null
+          catalog_file_url?: string | null
+          catalog_uploaded_at?: string | null
+          created_at?: string
+          default_discount_percentage?: number | null
+          delivery_regions?: string[] | null
+          distributor_id?: string
+          id?: string
+          max_discount_percentage?: number | null
+          minimum_order_value?: number | null
+          payment_terms?: string | null
+          updated_at?: string
+          volume_discount_enabled?: boolean | null
+          volume_discount_rules?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "distributor_configs_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: false
+            referencedRelation: "distributors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       distributors: {
         Row: {
           company_name: string
