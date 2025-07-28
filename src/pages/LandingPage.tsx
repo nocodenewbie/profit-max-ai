@@ -139,7 +139,7 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="text-lg bg-blue-600 hover:bg-blue-700 text-white py-[25px] px-[40px]">
+                <Button size="lg" className="text-lg bg-blue-600 hover:bg-blue-700 text-white py-[25px] px-[40px] rounded-[25px]">
                   <Play className="h-5 w-5 mr-2" />
                   Ver Demonstração
                 </Button>
