@@ -80,7 +80,7 @@ export default function LandingPage() {
             </div>
             
             {/* Navigation Menu */}
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-8 font-roboto font-thin">
               <button onClick={() => scrollToSection('inicio')} className="text-slate-300 hover:text-white transition-colors">
                 Início
               </button>
