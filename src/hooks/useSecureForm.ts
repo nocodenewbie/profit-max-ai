@@ -58,7 +58,7 @@ export function useSecureForm(options: UseSecureFormOptions) {
     // Generate new CSRF token for enhanced security
     const newToken = generateCSRFToken();
     setCSRFToken(newToken);
-    setCSRFTokenState(newToken);
+    setCsrfTokenState(newToken);
     setIsRateLimited(false);
     setRemainingTime(0);
   }, []);
