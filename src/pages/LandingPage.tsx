@@ -73,7 +73,7 @@ export default function LandingPage() {
       {/* Header Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-[36px]">
             {/* Logo */}
             <div className="flex items-center">
               <img src="/placeholder.svg" alt="Logo" className="h-8 w-8" />
@@ -100,10 +100,10 @@ export default function LandingPage() {
             
             {/* Navigation Buttons */}
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" asChild className="text-slate-300 hover:text-white hover:bg-slate-800">
+              <Button variant="ghost" asChild className="text-slate-300 hover:text-white hover:bg-slate-800 rounded-[25px] h-[25px]">
                 <Link to="/login">Login</Link>
               </Button>
-              <Button asChild className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6">
+              <Button asChild className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 rounded-[25px] h-[25px]">
                 <Link to="/register">ASSINAR</Link>
               </Button>
             </div>
