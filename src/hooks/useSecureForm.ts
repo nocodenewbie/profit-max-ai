@@ -55,10 +55,13 @@ export function useSecureForm(options: UseSecureFormOptions) {
   }, [options.rateLimitKey, options.maxAttempts, options.windowMs, csrfToken]);
 
   const resetForm = useCallback(() => {
-    initializeForm();
+    // Generate new CSRF token for enhanced security
+    const newToken = generateCSRFToken();
+    setCSRFToken(newToken);
+    setCSRFTokenState(newToken);
     setIsRateLimited(false);
     setRemainingTime(0);
-  }, [initializeForm]);
+  }, []);
 
   return {
     csrfToken,

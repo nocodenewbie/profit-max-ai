@@ -23,15 +23,18 @@ export function SecurityHeaders() {
       meta.content = content;
     };
 
-    // Content Security Policy
+    // Content Security Policy - Enhanced security without unsafe directives
     setHttpEquivTag('Content-Security-Policy', 
       "default-src 'self' https://blkgutzpmwmjuadznwwp.supabase.co; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://blkgutzpmwmjuadznwwp.supabase.co; " +
+      "script-src 'self' https://blkgutzpmwmjuadznwwp.supabase.co; " +
       "style-src 'self' 'unsafe-inline'; " +
       "img-src 'self' data: https:; " +
       "font-src 'self' https:; " +
       "connect-src 'self' https://blkgutzpmwmjuadznwwp.supabase.co https://api.openai.com; " +
-      "frame-ancestors 'none';"
+      "frame-ancestors 'none'; " +
+      "object-src 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self';"
     );
 
     // X-Frame-Options
