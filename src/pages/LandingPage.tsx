@@ -139,11 +139,11 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="text-lg bg-blue-600 hover:bg-blue-700 text-white py-[25px] px-[40px] rounded-[25px]">
+                <Button size="lg" className="text-lg bg-blue-600 hover:bg-blue-700 text-white px-[40px] rounded-[25px] py-[26px]">
                   <Play className="h-5 w-5 mr-2" />
                   Ver Demonstração
                 </Button>
-                <Button variant="outline" size="lg" className="text-lg border-slate-600 text-slate-300 hover:bg-slate-800 rounded-[25px] py-[25px] px-[37px]">
+                <Button variant="outline" size="lg" className="text-lg border-slate-600 text-slate-300 hover:bg-slate-800 rounded-[25px] px-[35px] py-[25px]">
                   Saiba Mais
                 </Button>
               </div>
