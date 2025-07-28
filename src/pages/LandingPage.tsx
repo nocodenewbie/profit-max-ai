@@ -217,7 +217,7 @@ export default function LandingPage() {
                   <Play className="h-5 w-5 mr-2" />
                   Ver Demonstração
                 </Button>
-                <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-slate-600 text-slate-300 hover:bg-slate-800">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-slate-600 text-slate-300 hover:bg-slate-800 rounded-[25px]">
                   Saiba Mais
                 </Button>
               </div>
