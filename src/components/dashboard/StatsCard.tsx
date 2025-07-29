@@ -23,33 +23,35 @@ export function StatsCard({
   className 
 }: StatsCardProps) {
   return (
-    <Card className={cn("relative overflow-hidden", className)}>
-      <CardContent className="p-6">
+    <Card className={cn("card-gradient border-border/50 hover:shadow-glow transition-all duration-300 group", className)}>
+      <CardContent className="p-8">
         <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">
+          <div className="space-y-3">
+            <p className="text-muted-foreground font-medium">
               {title}
             </p>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-foreground">
+            <div className="space-y-2">
+              <p className="text-3xl font-bold text-foreground group-hover:text-primary transition-colors">
                 {value}
               </p>
               {description && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {description}
                 </p>
               )}
               {trend && (
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-2">
                   <span
                     className={cn(
-                      "text-xs font-medium",
-                      trend.isPositive ? "text-success" : "text-destructive"
+                      "text-sm font-semibold px-2 py-1 rounded-lg",
+                      trend.isPositive 
+                        ? "text-success bg-success/10" 
+                        : "text-destructive bg-destructive/10"
                     )}
                   >
                     {trend.isPositive ? "+" : ""}{trend.value}%
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     vs mês anterior
                   </span>
                 </div>
@@ -57,7 +59,7 @@ export function StatsCard({
             </div>
           </div>
           
-          <div className="h-12 w-12 bg-muted rounded-lg flex items-center justify-center">
+          <div className="p-4 bg-primary/20 rounded-2xl group-hover:bg-primary/30 transition-colors">
             {icon}
           </div>
         </div>

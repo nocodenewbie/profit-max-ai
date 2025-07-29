@@ -22,12 +22,15 @@ export default function Dashboard() {
     <DashboardLayout title="Dashboard">
       <div className="space-y-6 animate-fade-in">
         {/* Welcome Section */}
-        <div className="bg-gradient-primary p-6 rounded-lg text-primary-foreground">
-          <div className="flex items-center space-x-4">
-            <Bot className="h-12 w-12" />
+        <div className="hero-gradient p-8 rounded-2xl text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
+          <div className="relative flex items-center space-x-6">
+            <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+              <Bot className="h-16 w-16" />
+            </div>
             <div>
-              <h2 className="text-2xl font-bold">Bem-vindo, {distributorProfile?.company_name}!</h2>
-              <p className="text-primary-foreground/80">
+              <h2 className="text-3xl font-bold mb-2">Bem-vindo, {distributorProfile?.company_name}!</h2>
+              <p className="text-white/90 text-lg">
                 Seu vendedor virtual está funcionando 24/7 para converter visitantes em pedidos.
               </p>
             </div>
@@ -74,60 +77,67 @@ export default function Dashboard() {
 
         {/* Performance Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
+          <Card className="card-gradient border-border/50 hover:shadow-glow transition-all duration-300">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Activity className="h-5 w-5 text-primary" />
-                <span>Performance da IA</span>
+              <CardTitle className="flex items-center space-x-3">
+                <div className="p-2 bg-primary/20 rounded-xl">
+                  <Activity className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-xl">Performance da IA</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Tempo Médio de Resposta</span>
-                  <span className="text-lg font-semibold text-primary">1.2s</span>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl">
+                  <span className="text-muted-foreground">Tempo Médio de Resposta</span>
+                  <span className="text-xl font-bold text-primary">1.2s</span>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Ticket Médio</span>
-                  <span className="text-lg font-semibold">R$ 1.956</span>
+                <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl">
+                  <span className="text-muted-foreground">Ticket Médio</span>
+                  <span className="text-xl font-bold">R$ 1.956</span>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Satisfação do Cliente</span>
-                  <span className="text-lg font-semibold text-success">4.8/5</span>
+                <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl">
+                  <span className="text-muted-foreground">Satisfação do Cliente</span>
+                  <span className="text-xl font-bold text-success">4.8/5</span>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Upsell Success</span>
-                  <span className="text-lg font-semibold text-success">43.2%</span>
+                <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl">
+                  <span className="text-muted-foreground">Upsell Success</span>
+                  <span className="text-xl font-bold text-success">43.2%</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="card-gradient border-border/50 hover:shadow-glow transition-all duration-300">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-primary" />
-                <span>Atividade Recente</span>
+              <CardTitle className="flex items-center space-x-3">
+                <div className="p-2 bg-primary/20 rounded-xl">
+                  <Clock className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-xl">Atividade Recente</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[
                   { time: "há 2 min", action: "Novo pedido de R$ 3.240", customer: "João Silva" },
                   { time: "há 8 min", action: "Conversa iniciada", customer: "Maria Santos" },
                   { time: "há 15 min", action: "Pedido convertido R$ 1.890", customer: "Pedro Costa" },
                   { time: "há 23 min", action: "Nova visita no widget", customer: "Ana Oliveira" }
                 ].map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                    <div>
-                      <p className="text-sm font-medium">{activity.action}</p>
-                      <p className="text-xs text-muted-foreground">{activity.customer}</p>
+                  <div key={index} className="flex items-center justify-between p-4 bg-muted/20 rounded-xl hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      <div>
+                        <p className="font-medium">{activity.action}</p>
+                        <p className="text-sm text-muted-foreground">{activity.customer}</p>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+                      <p className="text-sm text-muted-foreground">{activity.time}</p>
                     </div>
                   </div>
                 ))}
