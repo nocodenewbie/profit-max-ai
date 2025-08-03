@@ -100,6 +100,16 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
                 Configurações
               </a>
             </Button>
+            <Button 
+              variant={location.pathname === "/chat-test" ? "default" : "ghost"} 
+              className="w-full justify-start h-12 rounded-xl font-medium hover:bg-muted/50 transition-all duration-200 text-orange-500"
+              asChild
+            >
+              <a href="/chat-test">
+                <MessageSquare className="h-5 w-5 mr-3" />
+                Chat Test (Temporário)
+              </a>
+            </Button>
           </nav>
         </div>
       </div>
