@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Send, Bot, User, ShoppingCart } from "lucide-react"
+import { Send, Bot, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Message {
@@ -43,7 +43,6 @@ const mockMessages: Message[] = [
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>(mockMessages)
   const [input, setInput] = useState("")
-  const [cartItems, setCartItems] = useState<number>(0)
 
   const sendMessage = () => {
     if (!input.trim()) return
@@ -71,9 +70,8 @@ export function ChatInterface() {
   }
 
   return (
-    <div className="flex h-[600px] space-x-4">
-      {/* Chat Area */}
-      <Card className="flex-1 flex flex-col">
+    <div className="max-w-2xl mx-auto">
+      <Card className="h-[500px] flex flex-col">
         <CardHeader className="border-b">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
@@ -147,26 +145,6 @@ export function ChatInterface() {
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Cart Sidebar */}
-      <Card className="w-80">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <ShoppingCart className="h-5 w-5" />
-            <span>Carrinho</span>
-            {cartItems > 0 && (
-              <Badge variant="secondary">{cartItems}</Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <ShoppingCart className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>Seu carrinho está vazio</p>
-            <p className="text-sm">Adicione produtos através do chat</p>
           </div>
         </CardContent>
       </Card>

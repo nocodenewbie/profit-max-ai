@@ -16,7 +16,7 @@ import Products from "./pages/Products";
 import Quotes from "./pages/Quotes";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import ChatPage from "./pages/ChatPage";
+
 import { WidgetAPI } from "./pages/api/WidgetAPI";
 
 const queryClient = new QueryClient();
@@ -70,14 +70,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/chat-test" 
-              element={
-                <ProtectedRoute>
-                  <ChatPage />
                 </ProtectedRoute>
               } 
             />
