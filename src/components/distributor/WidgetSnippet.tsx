@@ -11,11 +11,12 @@ export function WidgetSnippet() {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
+  const widgetSrc = typeof window !== 'undefined' ? `${window.location.origin}/widget.js` : '/widget.js';
   const widgetCode = `<script>
   (function() {
     var script = document.createElement('script');
-    script.src = 'https://vendedor-virtual.com/widget.js';
-    script.setAttribute('data-widget-id', '${distributorProfile?.widget_id || 'YOUR_WIDGET_ID'}');
+    script.src = '${widgetSrc}';
+    script.setAttribute('data-distributor-id', '${distributorProfile?.id || 'YOUR_DISTRIBUTOR_ID'}');
     script.setAttribute('data-company', '${distributorProfile?.company_name || 'Your Company'}');
     document.head.appendChild(script);
   })();

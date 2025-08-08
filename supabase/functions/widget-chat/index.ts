@@ -14,9 +14,10 @@ interface ChatMessage {
 }
 
 interface WidgetChatRequest {
-  message: string;
+  message?: string;
   conversationId?: string;
   distributorId: string;
+  action?: string; // e.g., 'simulate_quote'
   customerInfo?: {
     email?: string;
     phone?: string;
@@ -40,10 +41,10 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { message, conversationId, distributorId, customerInfo }: WidgetChatRequest = await req.json();
+    const { message, conversationId, distributorId, customerInfo, action }: WidgetChatRequest = await req.json();
 
     // Input validation
-    if (!message || typeof message !== 'string' || message.length > 1000) {
+    if ((!action || action !== 'simulate_quote') && (!message || typeof message !== 'string' || message.length > 1000)) {
       return new Response(JSON.stringify({ 
         success: false, 
         error: 'Invalid message format or length' 
@@ -64,9 +65,10 @@ serve(async (req) => {
     }
 
     // Sanitize message content to prevent XSS
-    const sanitizedMessage = message.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                                   .replace(/javascript:/gi, '')
-                                   .replace(/on\w+\s*=/gi, '');
+    const sanitizedMessage = (message || '')
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '');
 
     // Verify distributor exists and get configuration
     const { data: distributor, error: distributorError } = await supabase
@@ -160,6 +162,46 @@ serve(async (req) => {
 • SEMPRE mencione que os preços são para orçamento e sujeitos à aprovação final`;
 
     // Create conversation messages array
+    // Handle simulation action (create a demo quote and return a friendly message)
+    if (action === 'simulate_quote') {
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (!serviceKey) {
+        return new Response(JSON.stringify({ success: false, error: 'Service role key not configured' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const supabaseService = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+      const quoteItems = [
+        { sku: 'DEMO-001', product_name: 'Produto Demonstrativo', quantity: 10, unit_price: 199.99, subtotal: 1999.90 }
+      ];
+      const total = quoteItems.reduce((sum, i: any) => sum + (i.subtotal || 0), 0);
+      const { data: inserted, error: insertError } = await supabaseService
+        .from('quotes')
+        .insert({
+          distributor_id: distributorId,
+          quote_items: quoteItems,
+          total_value: total,
+          final_value: total,
+          status: 'pending',
+          notes: 'Cotação simulada via widget',
+          customer_name: customerInfo?.name || 'Cliente Demo',
+          customer_email: customerInfo?.email || null,
+          customer_phone: customerInfo?.phone || null,
+          conversation_id: conversationId || null,
+        })
+        .select('id')
+        .single();
+      if (insertError) throw insertError;
+      const convId = conversationId || `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      return new Response(JSON.stringify({
+        success: true,
+        message: `Pronto! Gereí uma cotação simulada (#${inserted.id}) no valor de R$ ${total.toFixed(2)}. Você pode revisar no Dashboard.`,
+        conversationId: convId,
+        quoteId: inserted.id
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     const messages: ChatMessage[] = [
       {
         role: 'system',

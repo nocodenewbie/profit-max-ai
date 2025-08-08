@@ -3,8 +3,9 @@
   'use strict';
   
   // Configuration
-  const WIDGET_API_BASE = window.location.origin;
+  const WIDGET_API_BASE = 'https://blkgutzpmwmjuadznwwp.functions.supabase.co/functions/v1';
   let widgetId = null;
+  let distributorId = null;
   let companyName = null;
   let isOpen = false;
   let messages = [];
@@ -16,6 +17,7 @@
       const script = scripts[i];
       if (script.src && script.src.includes('widget.js')) {
         widgetId = script.getAttribute('data-widget-id');
+        distributorId = script.getAttribute('data-distributor-id');
         companyName = script.getAttribute('data-company') || 'Nossa Empresa';
         break;
       }
@@ -167,6 +169,15 @@
         justify-content: center;
       }
       
+      .vvi-widget-simulate {
+        background: transparent;
+        border: none;
+        color: #667eea;
+        font-size: 12px;
+        cursor: pointer;
+        padding: 0 4px;
+      }
+      
       .vvi-typing {
         display: flex;
         align-items: center;
@@ -242,6 +253,7 @@
         </div>
         
         <div class="vvi-widget-input">
+          <button class="vvi-widget-simulate" onclick="window.vviWidget.simulateQuote()" title="Simular cotação">Simular</button>
           <input type="text" id="vvi-input" placeholder="Digite sua mensagem..." onkeypress="window.vviWidget.handleKeyPress(event)">
           <button class="vvi-widget-send" onclick="window.vviWidget.sendMessage()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -258,13 +270,13 @@
   // API functions
   async function sendToAPI(message) {
     try {
-      const response = await fetch(`${WIDGET_API_BASE}/api/widget/chat`, {
+      const response = await fetch(`${WIDGET_API_BASE}/widget-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          widgetId: widgetId,
+          distributorId: distributorId,
           message: message,
           conversationId: localStorage.getItem('vvi-conversation-id')
         })
@@ -276,7 +288,11 @@
         localStorage.setItem('vvi-conversation-id', data.conversationId);
       }
       
-      return data.response;
+      if (!data.success) {
+        return 'Desculpe, ocorreu um erro. Tente novamente em alguns momentos.';
+      }
+      
+      return data.message;
     } catch (error) {
       console.error('Widget API error:', error);
       return 'Desculpe, ocorreu um erro. Tente novamente em alguns momentos.';
@@ -320,6 +336,37 @@
       // Hide typing and add bot response
       this.hideTyping();
       this.addMessage(response, 'bot');
+    },
+    
+    async simulateQuote() {
+      // User-visible action in chat
+      this.addMessage('Simular cotação', 'user');
+      this.showTyping();
+      try {
+        const response = await fetch(`${WIDGET_API_BASE}/widget-chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            distributorId: distributorId,
+            action: 'simulate_quote',
+            conversationId: localStorage.getItem('vvi-conversation-id')
+          })
+        });
+        const data = await response.json();
+        if (data.conversationId) {
+          localStorage.setItem('vvi-conversation-id', data.conversationId);
+        }
+        this.hideTyping();
+        if (data.success) {
+          this.addMessage(data.message || 'Cotação simulada com sucesso.', 'bot');
+        } else {
+          this.addMessage('Não foi possível simular a cotação agora.', 'bot');
+        }
+      } catch (e) {
+        console.error('simulateQuote error:', e);
+        this.hideTyping();
+        this.addMessage('Erro ao simular a cotação. Tente novamente.', 'bot');
+      }
     },
     
     addMessage(content, sender) {
@@ -373,8 +420,8 @@
     
     getConfig();
     
-    if (!widgetId) {
-      console.error('VVI Widget: data-widget-id não encontrado');
+    if (!distributorId) {
+      console.error('VVI Widget: data-distributor-id não encontrado');
       return;
     }
     
