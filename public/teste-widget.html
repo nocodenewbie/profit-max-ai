@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste do Widget - Site do Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .demo-content {
+            line-height: 1.6;
+            color: #666;
+            margin: 20px 0;
+        }
+        .highlight {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏭 Indústria Exemplo LTDA</h1>
+        
+        <div class="demo-content">
+            <h2>Nossos Produtos</h2>
+            <p>Somos especialistas em produtos industriais, oferecendo:</p>
+            <ul>
+                <li>Parafusos e fixadores especiais</li>
+                <li>Ferramentas de precisão</li>
+                <li>Equipamentos de segurança</li>
+                <li>Materiais elétricos industriais</li>
+            </ul>
+            
+            <div class="highlight">
+                <strong>💬 Teste o Widget!</strong><br>
+                O widget de vendas está ativo no canto inferior direito. 
+                Clique nele e teste mensagens como:
+                <ul>
+                    <li>"Preciso de parafusos Allen M8"</li>
+                    <li>"Quero fazer um orçamento"</li>
+                    <li>"Simular" (para testar a cotação automática)</li>
+                </ul>
+            </div>
+            
+            <h3>Entre em Contato</h3>
+            <p>Telefone: (11) 1234-5678<br>
+            Email: vendas@industriaexemplo.com.br</p>
+        </div>
+    </div>
+
+    <!-- WIDGET DO VENDEDOR VIRTUAL -->
+    <script>
+    (function() {
+        var script = document.createElement('script');
+        script.src = './widget.js';
+        script.setAttribute('data-distributor-id', '8718d20b-47c7-45c8-b89e-98961b12265b');
+        script.setAttribute('data-company', 'Minha Empresa');
+        document.head.appendChild(script);
+    })();
+    </script>
+</body>
+</html>

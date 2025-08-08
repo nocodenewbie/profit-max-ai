@@ -17,7 +17,7 @@ import Quotes from "./pages/Quotes";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
-import { WidgetAPI } from "./pages/api/WidgetAPI";
+
 
 const queryClient = new QueryClient();
 
