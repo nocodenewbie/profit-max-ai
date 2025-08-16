@@ -61,13 +61,13 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
               </a>
             </Button>
             <Button 
-              variant={location.pathname === "/conversations" ? "default" : "ghost"} 
+              variant={location.pathname === "/chat" ? "default" : "ghost"} 
               className="w-full justify-start h-12 rounded-xl font-medium hover:bg-muted/50 transition-all duration-200"
               asChild
             >
-              <a href="/conversations">
+              <a href="/chat">
                 <MessageSquare className="h-5 w-5 mr-3" />
-                Conversas
+                Chat IA
               </a>
             </Button>
             <Button 

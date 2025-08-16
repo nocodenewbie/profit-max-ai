@@ -1,15 +1,10 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
-import { StatsCard } from "@/components/dashboard/StatsCard"
+import { RealStatsCard } from "@/components/dashboard/RealStatsCard"
 import { WidgetSnippet } from "@/components/distributor/WidgetSnippet"
 import { OrdersList } from "@/components/distributor/OrdersList"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/contexts/AuthContext"
 import { 
-  DollarSign, 
-  TrendingUp, 
-  ShoppingCart, 
-  Users,
-  MessageSquare,
   Bot,
   Activity,
   Clock
@@ -37,40 +32,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatsCard
-            title="Conversas do Mês"
-            value="342"
-            description="Interações do widget"
-            icon={<MessageSquare className="h-6 w-6 text-primary" />}
-            trend={{ value: 28.5, isPositive: true }}
-          />
-          
-          <StatsCard
-            title="Taxa de Conversão"
-            value="68.4%"
-            description="Conversas → Pedidos"
-            icon={<TrendingUp className="h-6 w-6 text-success" />}
-            trend={{ value: 12.1, isPositive: true }}
-          />
-          
-          <StatsCard
-            title="Pedidos Gerados"
-            value="127"
-            description="Este mês"
-            icon={<ShoppingCart className="h-6 w-6 text-primary" />}
-            trend={{ value: 22.3, isPositive: true }}
-          />
-          
-          <StatsCard
-            title="Valor Total"
-            value="R$ 248.650"
-            description="Vendas via widget"
-            icon={<DollarSign className="h-6 w-6 text-success" />}
-            trend={{ value: 35.2, isPositive: true }}
-          />
-        </div>
+        {/* Real Stats */}
+        <RealStatsCard />
 
         {/* Widget Configuration */}
         <WidgetSnippet />

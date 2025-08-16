@@ -11,13 +11,11 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Conversations from "./pages/Conversations";
 import Products from "./pages/Products";
 import Quotes from "./pages/Quotes";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-
-
+import ChatPage from "./pages/ChatPage";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +68,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
                 </ProtectedRoute>
               } 
             />

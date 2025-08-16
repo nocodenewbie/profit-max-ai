@@ -4,51 +4,58 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload, Download, Package } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { Plus, Package, Edit3, Trash2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
-import { ProductStats } from "@/components/settings/ProductStats"
-import { ProductsTable } from "@/components/settings/ProductsTable"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 interface Product {
   id: string
   sku: string
   product_name: string
+  category: string
+  description: string
+  technical_specs: string
   cost_price: number
   selling_price: number
   profit_margin: number
-  category: string
-  description?: string
-  technical_specs?: string
 }
 
 export default function Products() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
-  const [lastImportDate, setLastImportDate] = useState<string>()
+  const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [formData, setFormData] = useState({
+    sku: "",
+    product_name: "",
+    category: "",
+    description: "",
+    technical_specs: "",
+    cost_price: 0,
+    selling_price: 0
+  })
 
   useEffect(() => {
-    loadProducts()
-    loadConfig()
+    if (user) {
+      loadProducts()
+    }
   }, [user])
 
   const loadProducts = async () => {
-    if (!user) return
-    
-    setLoading(true)
     try {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('distributor_id', user.id)
-        .order('product_name')
+        .eq('distributor_id', user?.id)
+        .order('created_at', { ascending: false })
 
       if (error) throw error
-
       setProducts(data || [])
     } catch (error: any) {
       toast({
@@ -61,168 +68,121 @@ export default function Products() {
     }
   }
 
-  const loadConfig = async () => {
-    if (!user) return
-    
-    try {
-      const { data, error } = await supabase
-        .from('distributor_configs')
-        .select('catalog_uploaded_at')
-        .eq('distributor_id', user.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') {
-        throw error
-      }
-
-      if (data?.catalog_uploaded_at) {
-        setLastImportDate(data.catalog_uploaded_at)
-      }
-    } catch (error: any) {
-      console.error('Error loading config:', error)
-    }
+  const calculateProfitMargin = (cost: number, selling: number) => {
+    if (cost === 0) return 0
+    return ((selling - cost) / cost) * 100
   }
 
-  const processCsvProducts = async (csvContent: string) => {
-    const lines = csvContent.split('\n').filter(line => line.trim())
-    if (lines.length < 2) throw new Error('Arquivo CSV deve conter cabeçalho e pelo menos um produto')
-
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
-    const requiredHeaders = ['sku', 'nome produto', 'preço de custo', 'preço de venda', 'margem de lucro', 'categoria do produto']
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     
-    const missingHeaders = requiredHeaders.filter(required => 
-      !headers.some(header => header.includes(required.toLowerCase()))
-    )
-    
-    if (missingHeaders.length > 0) {
-      throw new Error(`Colunas obrigatórias não encontradas: ${missingHeaders.join(', ')}`)
+    if (!formData.sku || !formData.product_name || !formData.category) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha SKU, nome e categoria",
+        variant: "destructive"
+      })
+      return
     }
 
-    // Clear existing products
-    await supabase
-      .from('products')
-      .delete()
-      .eq('distributor_id', user.id)
-
-    const products = []
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim())
-      if (values.length < headers.length) continue
-
-      const product = {
-        distributor_id: user.id,
-        sku: values[headers.findIndex(h => h.includes('sku'))] || '',
-        product_name: values[headers.findIndex(h => h.includes('nome'))] || '',
-        cost_price: parseFloat(values[headers.findIndex(h => h.includes('custo'))] || '0'),
-        selling_price: parseFloat(values[headers.findIndex(h => h.includes('venda'))] || '0'),
-        profit_margin: parseFloat(values[headers.findIndex(h => h.includes('margem'))] || '0'),
-        category: values[headers.findIndex(h => h.includes('categoria'))] || '',
-        description: values[headers.findIndex(h => h.includes('descrição')) || headers.findIndex(h => h.includes('descricao'))] || '',
-        technical_specs: values[headers.findIndex(h => h.includes('ficha') || h.includes('técnica'))] || ''
-      }
-
-      if (product.sku && product.product_name) {
-        products.push(product)
-      }
-    }
-
-    if (products.length === 0) {
-      throw new Error('Nenhum produto válido encontrado no arquivo')
-    }
-
-    const { error: insertError } = await supabase
-      .from('products')
-      .insert(products)
-
-    if (insertError) throw insertError
-
-    return products.length
-  }
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !user) return
-
-    setUploading(true)
     try {
-      const fileName = `${user.id}/${Date.now()}-${file.name}`
+      const profitMargin = calculateProfitMargin(formData.cost_price, formData.selling_price)
       
-      const { error: uploadError } = await supabase.storage
-        .from('product-catalogs')
-        .upload(fileName, file)
-
-      if (uploadError) throw uploadError
-
-      const { data: urlData } = supabase.storage
-        .from('product-catalogs')
-        .getPublicUrl(fileName)
-
-      // Process CSV files to extract products
-      let productsProcessed = 0
-      if (file.name.toLowerCase().endsWith('.csv')) {
-        const fileContent = await file.text()
-        productsProcessed = await processCsvProducts(fileContent)
+      const productData = {
+        ...formData,
+        distributor_id: user?.id,
+        profit_margin: profitMargin
       }
 
-      // Update config with upload info
-      await supabase
-        .from('distributor_configs')
-        .upsert({
-          distributor_id: user.id,
-          catalog_file_url: urlData.publicUrl,
-          catalog_file_name: file.name,
-          catalog_uploaded_at: new Date().toISOString()
-        })
+      let result
+      if (editingProduct) {
+        result = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', editingProduct.id)
+      } else {
+        result = await supabase
+          .from('products')
+          .insert([productData])
+      }
+
+      if (result.error) throw result.error
 
       toast({
-        title: "Catálogo enviado",
-        description: file.name.toLowerCase().endsWith('.csv') 
-          ? `Arquivo carregado e ${productsProcessed} produtos processados com sucesso!`
-          : "Arquivo carregado com sucesso!"
+        title: editingProduct ? "Produto atualizado" : "Produto criado",
+        description: "Operação realizada com sucesso!"
       })
 
-      // Reload data
-      if (file.name.toLowerCase().endsWith('.csv')) {
-        loadProducts()
-        loadConfig()
-      }
+      setDialogOpen(false)
+      resetForm()
+      loadProducts()
     } catch (error: any) {
       toast({
-        title: "Erro no upload",
+        title: "Erro ao salvar produto",
         description: error.message,
         variant: "destructive"
       })
-    } finally {
-      setUploading(false)
     }
   }
 
-  const downloadTemplate = () => {
-    const csvContent = "SKU,Nome Produto,Preço de Custo,Preço de Venda,Margem de Lucro,Categoria do Produto,Descrição,Ficha Técnica\n" +
-      "EX001,Parafuso M8x20,0.50,1.20,140,Fixação,Parafuso de aço carbono,Resistência: 8.8\n" +
-      "EX002,Porca M8,0.30,0.80,166,Fixação,Porca sextavada,Material: Aço zincado"
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'template-catalogo.csv'
-    a.click()
-    window.URL.revokeObjectURL(url)
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product)
+    setFormData({
+      sku: product.sku,
+      product_name: product.product_name,
+      category: product.category,
+      description: product.description || "",
+      technical_specs: product.technical_specs || "",
+      cost_price: product.cost_price,
+      selling_price: product.selling_price
+    })
+    setDialogOpen(true)
+  }
+
+  const handleDelete = async (productId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este produto?')) return
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId)
+
+      if (error) throw error
+
+      toast({
+        title: "Produto excluído",
+        description: "Produto removido com sucesso!"
+      })
+      loadProducts()
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir produto",
+        description: error.message,
+        variant: "destructive"
+      })
+    }
+  }
+
+  const resetForm = () => {
+    setEditingProduct(null)
+    setFormData({
+      sku: "",
+      product_name: "",
+      category: "",
+      description: "",
+      technical_specs: "",
+      cost_price: 0,
+      selling_price: 0
+    })
   }
 
   if (loading) {
     return (
       <DashboardLayout title="Produtos">
         <div className="animate-pulse space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="h-24 bg-muted rounded-lg"></div>
-            <div className="h-24 bg-muted rounded-lg"></div>
-            <div className="h-24 bg-muted rounded-lg"></div>
-            <div className="h-24 bg-muted rounded-lg"></div>
-          </div>
           <div className="h-32 bg-muted rounded-lg"></div>
-          <div className="h-64 bg-muted rounded-lg"></div>
+          <div className="h-48 bg-muted rounded-lg"></div>
         </div>
       </DashboardLayout>
     )
@@ -231,64 +191,205 @@ export default function Products() {
   return (
     <DashboardLayout title="Produtos">
       <div className="space-y-6">
-        {/* Upload Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Upload className="h-5 w-5 text-primary" />
-              <span>Upload do Catálogo</span>
-            </CardTitle>
-            <CardDescription>
-              Faça upload do seu catálogo de produtos em formato CSV
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <Label htmlFor="catalog_file">Arquivo do Catálogo</Label>
-                <Input
-                  id="catalog_file"
-                  type="file"
-                  accept=".csv,.xlsx,.xls"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                />
-              </div>
-              <Button
-                variant="outline"
-                onClick={downloadTemplate}
-                className="self-end"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Template CSV
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold">Catálogo de Produtos</h2>
+            <p className="text-muted-foreground">Gerencie seus produtos para a IA</p>
+          </div>
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Produto
               </Button>
-            </div>
-            {uploading && (
-              <div className="text-sm text-muted-foreground">
-                Processando arquivo... Isso pode levar alguns minutos.
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                </DialogTitle>
+                <DialogDescription>
+                  Adicione as informações do produto para que a IA possa oferecê-lo aos clientes
+                </DialogDescription>
+              </DialogHeader>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="sku">SKU *</Label>
+                    <Input
+                      id="sku"
+                      value={formData.sku}
+                      onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
+                      placeholder="ABC123"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="category">Categoria *</Label>
+                    <Input
+                      id="category"
+                      value={formData.category}
+                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                      placeholder="Ferramentas"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="product_name">Nome do Produto *</Label>
+                  <Input
+                    id="product_name"
+                    value={formData.product_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, product_name: e.target.value }))}
+                    placeholder="Parafuso Allen M8 x 50mm"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="description">Descrição</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Descrição do produto..."
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="technical_specs">Especificações Técnicas</Label>
+                  <Textarea
+                    id="technical_specs"
+                    value={formData.technical_specs}
+                    onChange={(e) => setFormData(prev => ({ ...prev, technical_specs: e.target.value }))}
+                    placeholder="Material: Aço inox, Rosca: M8, Comprimento: 50mm..."
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="cost_price">Preço de Custo (R$)</Label>
+                    <Input
+                      id="cost_price"
+                      type="number"
+                      step="0.01"
+                      value={formData.cost_price}
+                      onChange={(e) => setFormData(prev => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="selling_price">Preço de Venda (R$)</Label>
+                    <Input
+                      id="selling_price"
+                      type="number"
+                      step="0.01"
+                      value={formData.selling_price}
+                      onChange={(e) => setFormData(prev => ({ ...prev, selling_price: parseFloat(e.target.value) || 0 }))}
+                    />
+                  </div>
+                </div>
+                
+                {formData.cost_price > 0 && formData.selling_price > 0 && (
+                  <div className="p-3 bg-muted rounded">
+                    <p className="text-sm">
+                      Margem de Lucro: <span className="font-bold">
+                        {calculateProfitMargin(formData.cost_price, formData.selling_price).toFixed(1)}%
+                      </span>
+                    </p>
+                  </div>
+                )}
+                
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit">
+                    {editingProduct ? 'Atualizar' : 'Criar'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
 
-        {/* Product Statistics */}
-        <ProductStats products={products} lastImportDate={lastImportDate} />
-
-        {/* Products Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Package className="h-5 w-5 text-primary" />
-              <span>Produtos Cadastrados</span>
-            </CardTitle>
-            <CardDescription>
-              Gerencie seus produtos, preços e informações
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ProductsTable products={products} onProductUpdated={loadProducts} />
-          </CardContent>
-        </Card>
+        {products.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <Package className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Nenhum produto cadastrado</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                Adicione produtos para que a IA possa oferecê-los aos seus clientes
+              </p>
+              <Button onClick={() => setDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Primeiro Produto
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product) => (
+              <Card key={product.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{product.product_name}</CardTitle>
+                      <CardDescription>SKU: {product.sku}</CardDescription>
+                    </div>
+                    <Badge variant="secondary">{product.category}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {product.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {product.description}
+                      </p>
+                    )}
+                    
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Custo:</span>
+                        <div className="font-medium">R$ {product.cost_price.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Venda:</span>
+                        <div className="font-medium">R$ {product.selling_price.toFixed(2)}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Margem:</span>
+                        <span className="font-medium ml-1">{product.profit_margin.toFixed(1)}%</span>
+                      </div>
+                      
+                      <div className="flex space-x-1">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleEdit(product)}
+                        >
+                          <Edit3 className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleDelete(product.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   )
