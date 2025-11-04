@@ -10,6 +10,8 @@ import SecurityHeaders from "./components/security/SecurityHeaders";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Paywall from "./pages/Paywall";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import Quotes from "./pages/Quotes";
@@ -31,7 +33,9 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route 
+            <Route path="/paywall" element={<Paywall />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route
               path="/dashboard" 
               element={
                 <ProtectedRoute>
