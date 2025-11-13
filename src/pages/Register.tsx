@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useSecureForm } from '@/hooks/useSecureForm';
-import { validateEmail, validatePassword, validateCompanyName, sanitizeInput } from '@/lib/security';
+import { validateEmail, validatePassword, validateCompanyName, sanitizeInput, sanitizePlainText } from '@/lib/security';
 import { Loader2, Bot, Eye, EyeOff, Shield } from 'lucide-react';
 
 export default function Register() {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -105,7 +106,8 @@ export default function Register() {
       await register(
         sanitizeInput(email),
         password,
-        sanitizeInput(companyName)
+        sanitizePlainText(companyName),
+        sanitizePlainText(fullName)
       );
       navigate('/dashboard');
       toast({
@@ -169,13 +171,26 @@ export default function Register() {
             <input type="hidden" name="csrf_token" value={csrfToken} />
             
             <div className="space-y-2">
+              <Label htmlFor="fullName">Nome Completo</Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="João Silva"
+                value={fullName}
+                onChange={(e) => setFullName(sanitizePlainText(e.target.value))}
+                maxLength={100}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="companyName">Nome da Empresa</Label>
               <Input
                 id="companyName"
                 type="text"
                 placeholder="Sua Empresa Ltda"
                 value={companyName}
-                onChange={(e) => setCompanyName(sanitizeInput(e.target.value))}
+                onChange={(e) => setCompanyName(sanitizePlainText(e.target.value))}
                 maxLength={100}
                 required
               />

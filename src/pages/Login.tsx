@@ -168,6 +168,15 @@ export default function Login() {
               </div>
             </div>
             
+            <div className="flex items-center justify-end">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-primary hover:text-primary-dark"
+              >
+                Esqueceu sua senha?
+              </Link>
+            </div>
+            
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>

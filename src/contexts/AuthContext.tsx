@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { validateEmail, validatePassword, validateCompanyName, getGenericErrorMessage } from '@/lib/security';
+import { validateEmail, validatePassword, validateCompanyName, validateFullName, getGenericErrorMessage } from '@/lib/security';
 
 interface DistributorProfile {
   id: string;
@@ -18,7 +18,7 @@ interface AuthContextType {
   distributorProfile: DistributorProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, companyName: string) => Promise<void>;
+  register: (email: string, password: string, companyName: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (email: string, password: string, companyName: string) => {
+  const register = async (email: string, password: string, companyName: string, fullName: string) => {
     // Input validation
     const emailValidation = validateEmail(email);
     if (!emailValidation.isValid) {
@@ -123,6 +123,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error(companyValidation.error);
     }
 
+    const nameValidation = validateFullName(fullName);
+    if (!nameValidation.isValid) {
+      throw new Error(nameValidation.error);
+    }
+
     const redirectUrl = `${window.location.origin}/`;
     
     try {
@@ -130,7 +135,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: email.trim().toLowerCase(),
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName.trim()
+          }
         }
       });
       

@@ -24,10 +24,10 @@ serve(async (req) => {
     const user = data.user;
     
     if (!user?.email) {
-      throw new Error("User not authenticated or email not available");
+      throw new Error("User not authenticated");
     }
 
-    console.log(`Creating payment session for user: ${user.id}`);
+    console.log(`Creating payment for user: ${user.id}`);
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -41,54 +41,65 @@ serve(async (req) => {
       customerId = customers.data[0].id;
       console.log(`Existing Stripe customer found: ${customerId}`);
     } else {
-      console.log(`Creating new Stripe customer for: ${user.email}`);
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: {
+          supabase_user_id: user.id,
+        },
+      });
+      customerId = customer.id;
+      console.log(`New Stripe customer created: ${customerId}`);
     }
 
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Create Payment Intent for embedded checkout
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 48900, // R$ 489.00 in cents
+      currency: "brl",
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price: "price_1SPhurFlbbnBrVsjDq6T8k1F",
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/paywall`,
       metadata: {
         user_id: user.id,
+        email: user.email,
+      },
+      automatic_payment_methods: {
+        enabled: true,
       },
     });
 
-    console.log(`Checkout session created: ${session.id}`);
+    console.log(`Payment Intent created: ${paymentIntent.id}`);
 
-    // Create pending payment record
+    // Record payment in database
     const { error: dbError } = await supabaseClient
       .from('payments')
       .insert({
         user_id: user.id,
-        stripe_customer_id: customerId || null,
-        stripe_session_id: session.id,
         amount: 48900,
         currency: 'brl',
         status: 'pending',
+        stripe_payment_intent_id: paymentIntent.id,
+        stripe_customer_id: customerId,
       });
 
     if (dbError) {
       console.error('Error creating payment record:', dbError);
     }
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({ 
+        clientSecret: paymentIntent.client_secret,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
   } catch (error) {
-    console.error('Error in create-payment:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    console.error('Payment creation error:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
   }
 });

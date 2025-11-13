@@ -6,6 +6,17 @@ export const sanitizeInput = (input: string): string => {
   return DOMPurify.sanitize(input.trim());
 };
 
+// Sanitize plain text (allows spaces and common business characters)
+export const sanitizePlainText = (input: string): string => {
+  if (typeof input !== 'string') return '';
+  // Remove only dangerous characters while keeping spaces and common business chars
+  return input
+    .trim()
+    .replace(/[<>\/\\]/g, '') // Remove dangerous HTML/path characters
+    .replace(/javascript:/gi, '') // Remove script injection
+    .replace(/data:/gi, ''); // Remove data URIs
+};
+
 export const sanitizeHTML = (html: string): string => {
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li'],
@@ -126,7 +137,32 @@ export const validatePassword = (password: string): { isValid: boolean; error?: 
   return { isValid: true, strength };
 };
 
-// Company name validation
+// Full name validation
+export const validateFullName = (name: string): { isValid: boolean; error?: string } => {
+  if (!name || typeof name !== 'string') {
+    return { isValid: false, error: 'Nome é obrigatório' };
+  }
+
+  const trimmedName = name.trim();
+
+  if (trimmedName.length < 2) {
+    return { isValid: false, error: 'Nome deve ter pelo menos 2 caracteres' };
+  }
+
+  if (trimmedName.length > 100) {
+    return { isValid: false, error: 'Nome muito longo (máximo 100 caracteres)' };
+  }
+
+  // Only letters, spaces, hyphens, and apostrophes
+  const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
+  if (!nameRegex.test(trimmedName)) {
+    return { isValid: false, error: 'Nome contém caracteres inválidos' };
+  }
+
+  return { isValid: true };
+};
+
+// Company name validation (allows spaces and business characters)
 export const validateCompanyName = (name: string): { isValid: boolean; error?: string } => {
   if (!name || typeof name !== 'string') {
     return { isValid: false, error: 'Nome da empresa é obrigatório' };
@@ -140,6 +176,12 @@ export const validateCompanyName = (name: string): { isValid: boolean; error?: s
 
   if (trimmedName.length > 100) {
     return { isValid: false, error: 'Nome muito longo (máximo 100 caracteres)' };
+  }
+
+  // Allow letters, numbers, spaces, and common business characters (&, -, ., etc.)
+  const companyRegex = /^[a-zA-Z0-9À-ÿ\s&.,'\-()]+$/;
+  if (!companyRegex.test(trimmedName)) {
+    return { isValid: false, error: 'Nome contém caracteres inválidos' };
   }
 
   // Check for suspicious content

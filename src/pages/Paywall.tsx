@@ -1,39 +1,56 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles, Zap, Shield, Clock } from 'lucide-react';
+import PaymentForm from '@/components/payment/PaymentForm';
+
+const stripePromise = loadStripe('pk_test_51QdL5YRumVo1tZuI1GrZwgxgXz46Y1uQcNsLMTlFFG1JMfJSc2q9Ap7k6BVVWKGKB7gF6rDJpBJRq8vJIaKBzjlS00okzE2hy3');
 
 export default function Paywall() {
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const handlePurchase = async () => {
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: {}
-      });
+  useEffect(() => {
+    const initializePayment = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('create-payment', {
+          body: {}
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      if (data?.url) {
-        window.open(data.url, '_blank');
+        if (data?.clientSecret) {
+          setClientSecret(data.clientSecret);
+        }
+      } catch (error: any) {
+        console.error('Payment initialization error:', error);
+        toast({
+          title: 'Erro ao inicializar pagamento',
+          description: error.message || 'Tente novamente em alguns instantes',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
       }
-    } catch (error: any) {
-      console.error('Payment error:', error);
-      toast({
-        title: 'Erro ao processar pagamento',
-        description: error.message || 'Tente novamente em alguns instantes',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    initializePayment();
+  }, [toast]);
+
+  const appearance = {
+    theme: 'night' as const,
+    variables: {
+      colorPrimary: '#a78bfa',
+      colorBackground: '#1e293b',
+      colorText: '#f1f5f9',
+      colorDanger: '#ef4444',
+      fontFamily: 'Roboto, sans-serif',
+      borderRadius: '12px',
+    },
   };
 
   return (
@@ -89,36 +106,34 @@ export default function Paywall() {
           </div>
         </div>
 
-        <div className="bg-slate-900/50 rounded-lg p-6 mb-6">
+        <div className="bg-card/50 rounded-lg p-6 mb-6 border border-border">
           <div className="text-center">
-            <div className="text-sm text-slate-400 mb-2">Pagamento único</div>
+            <div className="text-sm text-muted-foreground mb-2">Pagamento único</div>
             <div className="flex items-baseline justify-center gap-2">
-              <span className="text-5xl font-bold text-white">R$ 489</span>
-              <span className="text-slate-400">,00</span>
+              <span className="text-5xl font-bold text-foreground">R$ 489</span>
+              <span className="text-muted-foreground">,00</span>
             </div>
-            <div className="text-sm text-orange-400 mt-2 font-semibold">
+            <div className="text-sm text-primary mt-2 font-semibold">
               Acesso vitalício • Sem mensalidades
             </div>
           </div>
         </div>
 
-        <Button
-          onClick={handlePurchase}
-          disabled={loading}
-          size="lg"
-          className="w-full text-lg py-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Processando...
-            </>
-          ) : (
-            'COMPRAR AGORA'
-          )}
-        </Button>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : clientSecret ? (
+          <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+            <PaymentForm />
+          </Elements>
+        ) : (
+          <div className="text-center text-destructive">
+            Erro ao carregar formulário de pagamento
+          </div>
+        )}
 
-        <p className="text-xs text-slate-500 text-center mt-4">
+        <p className="text-xs text-muted-foreground text-center mt-4">
           Pagamento seguro processado via Stripe • Garantia de 7 dias
         </p>
       </Card>
