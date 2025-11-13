@@ -4,19 +4,20 @@ import { Button } from '@/components/ui/button';
 
 export default function FinalCTASection() {
   return (
-    <div className="py-20 bg-slate-900 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-800/50 to-slate-900"></div>
+    <div className="py-24 bg-background relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-card/50 to-background"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,100,0,0.1),transparent_70%)]"></div>
       <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+        <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground animate-fade-up">
           Pronto para contratar o seu melhor vendedor?
         </h2>
-        <p className="text-lg text-slate-300 mb-8 leading-relaxed">
+        <p className="text-xl text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
           Chega de perder vendas e de ter um site que não vende. Dê ao seu negócio a inteligência de vendas que ele merece.
         </p>
         <Button 
           asChild 
           size="lg" 
-          className="text-lg px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold"
+          className="text-lg px-10 py-7 animate-fade-up [animation-delay:200ms] animate-glow"
         >
           <Link to="/register">
             COMPRAR AGORA
