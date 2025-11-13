@@ -7,12 +7,14 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Settings2, Bot, Percent, DollarSign, Globe, Plus, Trash2, Code } from "lucide-react"
+import { Settings2, Bot, Percent, DollarSign, Globe, Plus, Trash2, Code, User } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ProfileSettings } from "@/components/settings/ProfileSettings"
 
 interface DiscountTier {
   min_value: number
@@ -152,7 +154,23 @@ export default function Settings() {
 
   return (
     <DashboardLayout title="Configurações">
-      <div className="space-y-6">
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsTrigger value="profile" className="flex items-center space-x-2">
+            <User className="h-4 w-4" />
+            <span>Perfil</span>
+          </TabsTrigger>
+          <TabsTrigger value="business" className="flex items-center space-x-2">
+            <Settings2 className="h-4 w-4" />
+            <span>Negócio</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-6">
+          <ProfileSettings />
+        </TabsContent>
+
+        <TabsContent value="business" className="space-y-6">
         {/* Widget Configuration */}
         <Card>
           <CardHeader>
@@ -369,13 +387,14 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button onClick={saveConfig} disabled={saving} size="lg">
-            {saving ? "Salvando..." : "Salvar Configurações"}
-          </Button>
-        </div>
-      </div>
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <Button onClick={saveConfig} disabled={saving} size="lg">
+              {saving ? "Salvando..." : "Salvar Configurações"}
+            </Button>
+          </div>
+        </TabsContent>
+      </Tabs>
     </DashboardLayout>
   )
 }
