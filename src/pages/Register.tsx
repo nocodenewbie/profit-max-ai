@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useSecureForm } from '@/hooks/useSecureForm';
-import { validateEmail, validatePassword, validateCompanyName, sanitizeInput, sanitizePlainText } from '@/lib/security';
+import { validateEmail, validatePassword, validateCompanyName, validateFullName, sanitizeInput, sanitizePlainText } from '@/lib/security';
 import { Loader2, Bot, Eye, EyeOff, Shield } from 'lucide-react';
 
 export default function Register() {
