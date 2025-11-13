@@ -8,56 +8,62 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Dark theme as default to match reference */
-    --background: 225 15% 7%;
-    --foreground: 210 40% 98%;
+    /* Premium dark theme with fire gradient accents */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 230 20% 12%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 230 20% 12%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 252 84% 62%;
-    --primary-foreground: 210 40% 98%;
-    --primary-light: 252 84% 72%;
-    --primary-dark: 252 84% 52%;
+    /* Fire gradient: Orange to Orange-Red */
+    --primary: 20 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 25 100% 65%;
+    --primary-dark: 15 100% 55%;
+    --primary-glow: 20 100% 70%;
 
-    --secondary: 230 20% 16%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
 
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
     --success-light: 160 84% 49%;
 
-    --muted: 230 20% 16%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 252 84% 62%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 20 100% 60%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 230 20% 20%;
-    --input: 230 20% 16%;
-    --ring: 252 84% 62%;
+    --border: 0 0% 18%;
+    --input: 0 0% 12%;
+    --ring: 20 100% 60%;
 
     --profit-high: 142 76% 36%;
     --profit-medium: 45 93% 47%;
     --profit-low: 0 84% 60%;
 
-    /* Enhanced gradients for dark theme */
-    --gradient-primary: linear-gradient(135deg, hsl(252 84% 62%), hsl(269 84% 72%));
-    --gradient-card: linear-gradient(135deg, hsl(230 20% 12%), hsl(230 20% 16%));
-    --gradient-background: linear-gradient(180deg, hsl(225 15% 7%), hsl(225 15% 9%));
-    --gradient-hero: linear-gradient(135deg, hsl(252 84% 62%), hsl(269 84% 72%), hsl(286 84% 62%));
+    /* Premium fire gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(20 100% 60%), hsl(10 100% 55%));
+    --gradient-fire: linear-gradient(135deg, hsl(25 100% 65%), hsl(20 100% 60%), hsl(10 100% 55%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 8% / 0.8), hsl(0 0% 10% / 0.9));
+    --gradient-background: linear-gradient(180deg, hsl(0 0% 4%), hsl(0 0% 6%));
+    --gradient-hero: linear-gradient(135deg, hsl(25 100% 65%), hsl(20 100% 60%), hsl(10 100% 55%));
+    --gradient-subtle: linear-gradient(135deg, hsl(0 0% 8%), hsl(0 0% 12%));
 
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 30px hsl(var(--primary) / 0.4);
-    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.3);
+    /* Premium shadows with fire glow */
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.4);
+    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.5);
+    --shadow-lg: 0 20px 40px -10px hsl(0 0% 0% / 0.6);
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.3);
+    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.4);
+    --shadow-fire: 0 0 60px hsl(var(--primary) / 0.25), 0 8px 32px hsl(0 0% 0% / 0.5);
 
     --radius: 12px;
 
@@ -140,9 +146,23 @@ All colors MUST be HSL.
     background: var(--gradient-hero);
   }
 
+  .fire-gradient {
+    background: var(--gradient-fire);
+  }
+
   .glass-card {
-    background: hsl(var(--card) / 0.8);
-    backdrop-filter: blur(12px);
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .premium-card {
+    background: var(--gradient-subtle);
     border: 1px solid hsl(var(--border) / 0.3);
+    box-shadow: var(--shadow-card);
+  }
+
+  .fire-glow {
+    box-shadow: var(--shadow-fire);
   }
 }
