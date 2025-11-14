@@ -20,8 +20,28 @@ serve(async (req) => {
   try {
     const { session_id } = await req.json();
     
-    if (!session_id) {
-      throw new Error("Session ID is required");
+    // Validate session_id format
+    if (!session_id || typeof session_id !== 'string' || !session_id.startsWith('cs_')) {
+      console.warn(`[SECURITY] Invalid session_id format attempt: ${session_id}`);
+      return new Response(
+        JSON.stringify({ error: 'Invalid session ID format' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
+    }
+    
+    // Additional length validation
+    if (session_id.length < 10 || session_id.length > 200) {
+      console.warn(`[SECURITY] Invalid session_id length: ${session_id.length}`);
+      return new Response(
+        JSON.stringify({ error: 'Invalid session ID' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
     }
 
     console.log(`Verifying payment for session: ${session_id}`);
