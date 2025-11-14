@@ -13,16 +13,56 @@ interface ChatMessage {
   timestamp?: string;
 }
 
+interface CustomerInfo {
+  email?: string;
+  phone?: string;
+  name?: string;
+}
+
 interface WidgetChatRequest {
   message?: string;
   conversationId?: string;
   distributorId: string;
   action?: string; // e.g., 'simulate_quote'
-  customerInfo?: {
-    email?: string;
-    phone?: string;
-    name?: string;
-  };
+  customerInfo?: CustomerInfo;
+}
+
+// Validation helpers
+function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 255;
+}
+
+function validatePhone(phone: string): boolean {
+  const phoneRegex = /^[\d\s()+-]{7,20}$/;
+  return phoneRegex.test(phone);
+}
+
+function validateName(name: string): boolean {
+  const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]{1,100}$/;
+  return nameRegex.test(name);
+}
+
+function validateCustomerInfo(customerInfo?: CustomerInfo): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!customerInfo) {
+    return { isValid: true, errors: [] };
+  }
+
+  if (customerInfo.email && !validateEmail(customerInfo.email)) {
+    errors.push('Invalid email format');
+  }
+
+  if (customerInfo.phone && !validatePhone(customerInfo.phone)) {
+    errors.push('Invalid phone format');
+  }
+
+  if (customerInfo.name && !validateName(customerInfo.name)) {
+    errors.push('Invalid name format');
+  }
+
+  return { isValid: errors.length === 0, errors };
 }
 
 serve(async (req) => {
@@ -58,6 +98,19 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         success: false, 
         error: 'Invalid distributor ID' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate customer info
+    const customerValidation = validateCustomerInfo(customerInfo);
+    if (!customerValidation.isValid) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Invalid customer information',
+        details: customerValidation.errors
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -172,10 +225,24 @@ serve(async (req) => {
         });
       }
       const supabaseService = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+      
+      // Validate distributor_id again before using with service role
+      if (!distributorId || typeof distributorId !== 'string' || !distributorId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        console.warn(`[SECURITY] Invalid distributor_id attempt: ${distributorId}`);
+        return new Response(JSON.stringify({ success: false, error: 'Invalid distributor ID format' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       const quoteItems = [
         { sku: 'DEMO-001', product_name: 'Produto Demonstrativo', quantity: 10, unit_price: 199.99, subtotal: 1999.90 }
       ];
       const total = quoteItems.reduce((sum, i: any) => sum + (i.subtotal || 0), 0);
+      
+      // Audit log for service role usage
+      console.log(`[AUDIT] Service role creating quote for distributor: ${distributorId}, total: ${total}, customer: ${customerInfo?.email || 'unknown'}`);
+      
       const { data: inserted, error: insertError } = await supabaseService
         .from('quotes')
         .insert({
@@ -192,7 +259,10 @@ serve(async (req) => {
         })
         .select('id')
         .single();
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error(`[AUDIT] Failed quote insert for distributor ${distributorId}:`, insertError.message);
+        throw insertError;
+      }
       const convId = conversationId || `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       return new Response(JSON.stringify({
         success: true,

@@ -21,17 +21,14 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       }
 
       try {
+        // Use server-side function for payment verification
         const { data, error } = await supabase
-          .from('payments')
-          .select('status')
-          .eq('user_id', user.id)
-          .eq('status', 'paid')
-          .maybeSingle();
+          .rpc('user_has_paid', { user_uuid: user.id });
 
         if (error) throw error;
-        setHasPaid(!!data);
+        setHasPaid(data === true);
       } catch (error) {
-        console.error('Error checking payment:', error);
+        // Silent error handling - don't expose details to console
         setHasPaid(false);
       } finally {
         setCheckingPayment(false);
