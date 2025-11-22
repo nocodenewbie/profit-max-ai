@@ -7,7 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles, Zap, Shield, Clock } from 'lucide-react';
 import PaymentForm from '@/components/payment/PaymentForm';
 
-const stripePromise = loadStripe('pk_test_51QdL5YRumVo1tZuI1GrZwgxgXz46Y1uQcNsLMTlFFG1JMfJSc2q9Ap7k6BVVWKGKB7gF6rDJpBJRq8vJIaKBzjlS00okzE2hy3');
+const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+if (!stripePublishableKey) {
+  console.error('VITE_STRIPE_PUBLISHABLE_KEY is not defined');
+}
+
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 export default function Paywall() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -122,6 +128,10 @@ export default function Paywall() {
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : !stripePromise ? (
+          <div className="text-center text-destructive">
+            Erro de configuração: Stripe não configurado
           </div>
         ) : clientSecret ? (
           <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
